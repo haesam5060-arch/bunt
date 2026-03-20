@@ -12,7 +12,7 @@ const path = require('path');
 const OHLCV_DIR = path.join(__dirname, '..', 'data', 'ohlcv');
 const KOSDAQ_FILE = path.join(__dirname, '..', 'data', 'kosdaq-codes.json');
 
-const COST = 0.00231; // 수수료+세금+슬리피지
+const COST = 0.0118; // 1.18% (한투 수수료 0.5%×2 + 매도세 0.18%)
 
 // 최근 1년 기준 (2025-03-17 ~ 2026-03-17)
 const DATE_FROM = '2025-03-17';

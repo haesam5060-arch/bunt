@@ -78,13 +78,17 @@
 
     .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-    /* ── 모드 라벨 ────────────────────────── */
-    .mode-label {
-      font-size: 11px; font-weight: 600; padding: 4px 10px;
-      border-radius: 4px; letter-spacing: 1px;
+    /* ── 뷰 탭 ────────────────────────────── */
+    .view-tabs { display: flex; gap: 0; }
+    .view-tab {
+      padding: 6px 16px; border: 1px solid var(--border); background: transparent;
+      color: var(--dim); font-family: inherit; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
     }
-    .mode-label.paper { background: rgba(76,175,80,0.15); color: var(--green); }
-    .mode-label.real { background: rgba(239,83,80,0.25); color: var(--red); border: 1px solid var(--red); }
+    .view-tab:first-child { border-radius: 6px 0 0 6px; }
+    .view-tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+    .view-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    .view-tab.active-real { background: var(--red); color: #fff; border-color: var(--red); }
 
     /* ── 스케줄 바 ────────────────────────── */
     .schedule-bar {
@@ -135,6 +139,23 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── 툴팁 ────────────────────────────── */
+    .tip { position: relative; cursor: help; }
+    .tip .tip-text {
+      display: none; position: absolute; bottom: 130%; left: 50%;
+      transform: translateX(-50%); background: #222; color: #eee;
+      padding: 8px 12px; border-radius: 6px; font-size: 11px;
+      font-weight: 400; white-space: pre-line; line-height: 1.6;
+      min-width: 200px; z-index: 10; text-transform: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .tip .tip-text::after {
+      content: ''; position: absolute; top: 100%; left: 50%;
+      margin-left: -5px; border: 5px solid transparent;
+      border-top-color: #222;
+    }
+    .tip:hover .tip-text { display: block; }
+
     /* ── 테이블 ───────────────────────────── */
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -180,6 +201,50 @@
 
     .timing { font-size: 11px; color: var(--dim); margin-top: 4px; }
     #refreshTimer { color: var(--dim); font-size: 11px; }
+
+    /* ── 차트 모달 ──────────────────────── */
+    .chart-modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75); z-index: 1000;
+      justify-content: center; align-items: center;
+    }
+    .chart-modal-overlay.active { display: flex; }
+    .chart-modal {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      width: 94vw; max-width: 1000px; height: 85vh; max-height: 800px;
+      display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .chart-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+    }
+    .chart-modal-header h3 { font-size: 15px; font-weight: 700; }
+    .chart-modal-header h3 span { color: var(--dim); font-size: 12px; font-weight: 400; margin-left: 8px; }
+    .chart-modal-close {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--dim); font-size: 18px; width: 32px; height: 32px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .chart-modal-close:hover { border-color: var(--red); color: var(--red); }
+    .chart-modal-body { flex: 1; position: relative; background: #141413; overflow: hidden; display: flex; flex-direction: column; }
+    .chart-modal-body .chart-loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: var(--dim); font-size: 13px; }
+    #chartVolumeWrap { height: 80px; }
+    .chart-modal-links {
+      display: flex; gap: 8px; padding: 10px 20px;
+      border-top: 1px solid var(--border); font-size: 11px;
+    }
+    .chart-modal-links a {
+      color: var(--accent); text-decoration: none; padding: 4px 10px;
+      border: 1px solid var(--border); border-radius: 4px; transition: all 0.2s;
+    }
+    .chart-modal-links a:hover { border-color: var(--accent); background: rgba(79,195,247,0.1); }
+    .stock-link { cursor: pointer; border-bottom: 1px dashed var(--dim); transition: color 0.2s; }
+    .stock-link:hover { color: var(--accent); border-bottom-color: var(--accent); }
+    @media (max-width: 768px) {
+      .chart-modal { width: 98vw; height: 80vh; max-width: none; }
+    }
   </style>
 </head>
 <body>
@@ -189,7 +254,11 @@
   <div class="header">
     <div class="header-left">
       <h1><span>BUNT</span> 번트 오버나잇</h1>
-      <span id="modeLabel" class="mode-label paper">PAPER 모의투자</span>
+      <!-- 탭: 모의/실전 뷰 전환 -->
+      <div class="view-tabs">
+        <button id="tabPaper" class="view-tab active" onclick="switchView('paper')">모의투자</button>
+        <button id="tabReal" class="view-tab" onclick="switchView('real')">실전투자</button>
+      </div>
     </div>
     <div class="header-right">
       <span id="refreshTimer">--</span>
@@ -198,7 +267,8 @@
         <option value="balanced">균형형</option>
         <option value="stable">안정형</option>
       </select>
-      <button id="toggleBtn" class="toggle-btn off" onclick="toggleEngine()">OFF 모의</button>
+      <!-- 실전 자동매매 ON/OFF (실전 탭에서만 표시) -->
+      <button id="realTradingBtn" class="toggle-btn off" style="display:none;" onclick="toggleRealTrading()">실전 OFF</button>
     </div>
   </div>
 
@@ -216,6 +286,7 @@
       <div class="stat-card">
         <div class="stat-label">누적 손익</div>
         <div class="stat-value" id="totalPnl">0원</div>
+        <div id="totalPnlPct" style="display:none;"></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">승률</div>
@@ -224,6 +295,10 @@
       <div class="stat-card">
         <div class="stat-label">거래일수</div>
         <div class="stat-value" id="tradingDays">0일</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">일평균 손익</div>
+        <div class="stat-value" id="avgPnl">--</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">현재 보유</div>
@@ -239,12 +314,70 @@
       </div>
     </div>
 
+    <!-- 수익 곡선 -->
+    <div class="section">
+      <div class="section-title">수익 곡선 <span style="font-weight:400;color:var(--dim);font-size:11px;margin-left:8px;">
+        <span style="color:#4fc3f7;">─</span> 자산 추이 &nbsp;
+        <span style="color:#4caf50;">■</span> 수익 &nbsp;
+        <span style="color:#ef5350;">■</span> 손실
+      </span></div>
+      <div id="equityChartWrap" style="width:100%;height:200px;background:#141413;border-radius:6px;overflow:hidden;"></div>
+    </div>
+
     <!-- 수동 실행 -->
     <div class="actions">
       <button class="btn" id="btnScan" onclick="manualScan(this)">스캔</button>
       <button class="btn" id="btnBuy" onclick="manualBuy(this)">수동 매수</button>
       <button class="btn danger" id="btnSell" onclick="manualSell(this)">수동 매도</button>
       <button class="btn" onclick="refreshAll()">새로고침</button>
+      <button class="btn" onclick="toggleInfo()" style="margin-left:auto">엔진 로직</button>
+    </div>
+
+    <!-- 엔진 로직 인포 패널 -->
+    <div id="infoPanel" style="display:none; margin-bottom:20px;">
+      <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; font-size:12px; line-height:2;">
+        <div style="font-size:14px; font-weight:700; margin-bottom:12px; color:var(--accent);">번트 엔진 종목 선별 프로세스</div>
+        <pre style="color:var(--text); white-space:pre-wrap; font-family:inherit;">
+16:20  코스닥 전종목 스캔 (1,818종목, 0.3초)
+  │    네이버 모바일 API 19페이지 병렬 호출
+  ▼
+  ① 등락률 ≥ 20%
+  │    전일 종가 대비 오늘 +20% 이상 오른 종목만
+  ▼
+  ② 종가 = 고가 (100%)
+  │    장 마감 시점에 당일 최고가로 마감한 종목만
+  │    (마지막까지 매수세 우위 = 잔여 수요 존재)
+  ▼
+  ③ 갭업 ≥ 0%
+  │    오늘 시가가 전일 종가 이상으로 출발한 종목만
+  │    (아침부터 매수세 유입)
+  ▼
+  통과 종목 전부 매수 (보통 4~8개, 최대 10개)
+  │    예수금 ÷ 종목수 = 균등 배분
+  │
+16:25  KIS API 매수 주문 (종가 지정가)
+  │
+  ▼  ── 하룻밤 보유 ──
+  │
+08:50  KIS API 시장가 매도 → 09:00 시가 체결
+  │    실패 시 09:01 재시도, 09:10 최종 손절
+  ▼
+  끝. 당일 저녁 다시 반복.</pre>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); color:var(--dim);">
+          <strong style="color:var(--text);">한 줄 요약:</strong> 오늘 폭등하고 끝까지 안 빠진 종목 = 내일 아침에도 오른다<br>
+          <strong style="color:var(--text);">이론:</strong> Overnight Return Anomaly + Short-term Momentum + Auction Theory<br>
+          <strong style="color:var(--text);">백테스트:</strong> 1년 244거래일, 건당 +0.88%, 승률 81%, MDD 10.6%
+        </div>
+      </div>
+    </div>
+
+    <!-- 실제 증권 잔고 (실전 모드에서만 표시) -->
+    <div id="realHoldingsSection" class="section" style="display:none;">
+      <div class="section-title" style="color:var(--red);">📊 실제 증권 잔고 <span id="realHoldingsCount" style="font-weight:400;color:var(--dim);font-size:12px;"></span> <span id="realTotalEval" style="font-weight:400;color:var(--dim);font-size:12px;margin-left:8px;"></span></div>
+      <table>
+        <thead><tr><th>종목</th><th>수량</th><th>평균매수가</th><th>현재가</th><th>평가금액</th><th>수익률</th></tr></thead>
+        <tbody id="realHoldingsTable"></tbody>
+      </table>
     </div>
 
     <div class="two-col">
@@ -252,7 +385,7 @@
       <div class="section">
         <div class="section-title">보유 종목</div>
         <table>
-          <thead><tr><th>종목</th><th>수량</th><th>매수가</th><th>등락률</th></tr></thead>
+          <thead><tr><th>종목</th><th>수량</th><th>매수가</th><th>매수금액</th><th>등락률</th></tr></thead>
           <tbody id="positionsTable"></tbody>
         </table>
       </div>
@@ -261,7 +394,17 @@
       <div class="section">
         <div class="section-title">최근 스캔 <span id="scanTiming" class="timing"></span></div>
         <table>
-          <thead><tr><th>종목</th><th>종가</th><th>등락률</th><th>종/고</th></tr></thead>
+          <thead><tr>
+  <th>종목</th>
+  <th class="tip">현재가 ⓘ<span class="tip-text">장중: 실시간 현재가
+장후: 확정 종가</span></th>
+  <th class="tip">등락률 ⓘ<span class="tip-text">전일 종가 대비 오늘의 가격 변동률
+필터 조건: +20% 이상만 통과</span></th>
+  <th class="tip">종/고 ⓘ<span class="tip-text">종가 ÷ 고가 비율
+100% = 당일 최고가로 마감
+(매수세가 끝까지 우위)
+필터 조건: 100%만 통과</span></th>
+</tr></thead>
           <tbody id="scanTable"></tbody>
         </table>
       </div>
@@ -272,7 +415,7 @@
       <div class="section">
         <div class="section-title">일별 손익 (최근 30일)</div>
         <table>
-          <thead><tr><th>날짜</th><th>종목수</th><th>손익</th></tr></thead>
+          <thead><tr><th>날짜</th><th>종목수</th><th>손익</th><th>누적</th></tr></thead>
           <tbody id="pnlTable"></tbody>
         </table>
       </div>
@@ -285,6 +428,33 @@
     </div>
   </div>
 
+  <!-- 차트 모달 -->
+  <div class="chart-modal-overlay" id="chartOverlay" onclick="closeChart(event)">
+    <div class="chart-modal">
+      <div class="chart-modal-header">
+        <h3 id="chartTitle">종목명</h3>
+        <button class="chart-modal-close" onclick="closeChart()">&times;</button>
+      </div>
+      <div class="chart-modal-body" id="chartBody">
+        <div id="chartCandleWrap" style="flex:1;min-height:0;"></div>
+        <div id="chartVolumeWrap"></div>
+        <div class="chart-loading" id="chartLoading">차트 로딩 중...</div>
+      </div>
+      <div class="chart-modal-links">
+        <span id="chartLegend" style="color:var(--dim);font-size:11px;">
+          <span style="color:#ef5350;">●</span> 양봉
+          <span style="color:#2962FF;margin-left:6px;">●</span> 음봉
+          <span style="color:#4a9eff;margin-left:6px;">─</span> MA20
+          <span style="color:#e040fb;margin-left:6px;">─</span> MA60
+        </span>
+        <span style="flex:1;"></span>
+        <a id="chartLinkNaver" href="#" target="_blank">네이버 증권</a>
+        <a id="chartLinkMobile" href="#" target="_blank">모바일 차트</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

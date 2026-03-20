@@ -1,11 +1,15 @@
 // ═══════════════════════════════════════════════════════════════
 // 번트 스캐너 — 네이버 모바일 API 기반 코스닥 전종목 실시간 스캔
 // ═══════════════════════════════════════════════════════════════
+const http  = require('http');
 const https = require('https');
+const fs    = require('fs');
+const path  = require('path');
 
 const MARKET_VALUE_URL = 'https://m.stock.naver.com/api/stocks/marketValue/KOSDAQ';
 const PRICE_URL       = 'https://m.stock.naver.com/api/stock';
 const PAGE_SIZE       = 100;
+const BLACKLIST_FILE  = path.join(__dirname, 'data', 'blacklist.json');
 
 // 쉼표 포함 숫자 파싱 ("152,100" → 152100)
 function parseNum(val) {
@@ -103,6 +107,10 @@ async function fetchStockDetails(codes, concurrency = 10) {
 
 // ── 3단계: 필터 적용 ─────────────────────────────────────────
 function applyFilter(stocks, details, preset) {
+  // 블랙리스트 로드
+  const bl = loadBlacklist();
+  const blacklistSet = new Set(bl.codes || []);
+
   // details를 code로 인덱싱
   const detailMap = {};
   for (const d of details) detailMap[d.code] = d;
@@ -111,6 +119,12 @@ function applyFilter(stocks, details, preset) {
   for (const s of stocks) {
     const d = detailMap[s.code];
     if (!d || d.close <= 0 || d.high <= 0 || d.open <= 0) continue;
+
+    // 신규상장 제외 (등락률 30% 초과 = 가격제한폭 밖 = 신규상장 첫날)
+    if (s.changeRate > 0.30) continue;
+
+    // 관리종목/정리매매 제외
+    if (blacklistSet.has(s.code)) continue;
 
     // 등락률 필터
     if (preset.minChangeRate != null && s.changeRate < preset.minChangeRate) continue;
@@ -164,6 +178,40 @@ function applyFilter(stocks, details, preset) {
   return filtered.slice(0, maxStocks);
 }
 
+// ── 블랙리스트: 관리종목/정리매매 ────────────────────────────
+function fetchHtml(url, timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Timeout')), timeout);
+    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, res => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => { clearTimeout(timer); resolve(Buffer.concat(chunks).toString()); });
+    }).on('error', e => { clearTimeout(timer); reject(e); });
+  });
+}
+
+async function updateBlacklist() {
+  try {
+    const html = await fetchHtml('https://finance.naver.com/sise/management.naver');
+    const codes = [...html.matchAll(/code=(\d{6})/g)].map(m => m[1]);
+    const unique = [...new Set(codes)];
+    const data = { updatedAt: new Date().toISOString(), count: unique.length, codes: unique };
+    fs.writeFileSync(BLACKLIST_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return data;
+  } catch (e) {
+    console.error('블랙리스트 갱신 실패:', e.message);
+    return loadBlacklist();
+  }
+}
+
+function loadBlacklist() {
+  try {
+    return JSON.parse(fs.readFileSync(BLACKLIST_FILE, 'utf8'));
+  } catch {
+    return { codes: [] };
+  }
+}
+
 // ── 통합 스캔 파이프라인 ─────────────────────────────────────
 async function runScanPipeline(preset) {
   const t0 = Date.now();
@@ -205,4 +253,6 @@ module.exports = {
   fetchStockDetails,
   applyFilter,
   runScanPipeline,
+  updateBlacklist,
+  loadBlacklist,
 };

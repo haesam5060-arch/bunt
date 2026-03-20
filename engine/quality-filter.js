@@ -11,7 +11,7 @@ const path = require('path');
 
 const OHLCV_DIR = path.join(__dirname, '..', 'data', 'ohlcv');
 const KOSDAQ_FILE = path.join(__dirname, '..', 'data', 'kosdaq-codes.json');
-const COST = 0.00231;
+const COST = 0.0118; // 1.18% (한투 수수료 0.5%×2 + 매도세 0.18%)
 const INIT_CAPITAL = 5000000;
 
 function loadData(dateFrom, dateTo) {
