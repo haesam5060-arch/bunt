@@ -185,6 +185,7 @@ async function executeSellPipeline() {
 
   const token = await ensureToken();
   const sellResults = [];
+  const failedPositions = [];
 
   for (const pos of state.positions) {
     try {
@@ -206,8 +207,19 @@ async function executeSellPipeline() {
       await sleep(250);
     } catch (e) {
       log(`❌ 매도실패: ${pos.name}(${pos.code}) — ${e.message}`, 'error');
+      failedPositions.push(pos);
     }
   }
+
+  // 매도 성공 종목만 정리, 실패 종목은 유지 (09:10 재시도)
+  if (failedPositions.length > 0) {
+    state.positions = failedPositions;
+    log(`⚠️ 매도 실패 ${failedPositions.length}종목 — 09:10 재시도 예정`, 'warn');
+  } else {
+    state.positions = [];
+  }
+  state.lastSell = new Date().toISOString();
+  saveState(state, config.tradingMode);
 
   // 체결 확인 (30초 후)
   if (sellResults.length > 0) {
@@ -220,10 +232,6 @@ async function executeSellPipeline() {
       }
     }, 30000);
   }
-
-  state.positions = [];
-  state.lastSell = new Date().toISOString();
-  saveState(state, config.tradingMode);
 
   log(`=== 매도 완료: ${sellResults.length}종목 ===`);
 }
@@ -305,6 +313,30 @@ function setupCron() {
       await executeSellPipeline();
     } catch (e) {
       log(`매도 크론 에러: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // 매도 재시도: 평일 09:01 (장 오픈 직후 즉시 손절)
+  cron.schedule('1 9 * * 1-5', async () => {
+    try {
+      if (!state.positions || state.positions.length === 0) return;
+      config = loadConfig();
+      log(`🚨 [즉시 손절] 미매도 ${state.positions.length}종목 — 장 오픈 즉시 재매도`, 'warn');
+      await executeSellPipeline();
+    } catch (e) {
+      log(`손절 재시도 에러: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // 최종 안전장치: 평일 09:10 (09:01 도 실패 시)
+  cron.schedule('10 9 * * 1-5', async () => {
+    try {
+      if (!state.positions || state.positions.length === 0) return;
+      config = loadConfig();
+      log(`🚨 [최종 손절] 미매도 ${state.positions.length}종목 — 강제 청산`, 'error');
+      await executeSellPipeline();
+    } catch (e) {
+      log(`최종 손절 에러: ${e.message}`, 'error');
     }
   }, { timezone: 'Asia/Seoul' });
 
