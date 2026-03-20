@@ -1,0 +1,1245 @@
+{
+  "meta": {
+    "combos": 13608,
+    "viable": 27213,
+    "wfCandidates": 42
+  },
+  "calmar_top25": [
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.014054,
+      "winRate": 0.5576,
+      "maxDD": 0.0563,
+      "sharpe": 11.16,
+      "calmar": 62.43,
+      "capital": 143763673,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.013779,
+      "winRate": 0.5514,
+      "maxDD": 0.0563,
+      "sharpe": 10.84,
+      "calmar": 61.21,
+      "capital": 134438704,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.013773,
+      "winRate": 0.5511,
+      "maxDD": 0.0563,
+      "sharpe": 10.83,
+      "calmar": 61.18,
+      "capital": 134243369,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.013773,
+      "winRate": 0.5511,
+      "maxDD": 0.0563,
+      "sharpe": 10.83,
+      "calmar": 61.18,
+      "capital": 134243369,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.013758,
+      "winRate": 0.5515,
+      "maxDD": 0.0563,
+      "sharpe": 10.84,
+      "calmar": 61.12,
+      "capital": 133767511,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.013746,
+      "winRate": 0.5508,
+      "maxDD": 0.0563,
+      "sharpe": 10.81,
+      "calmar": 61.06,
+      "capital": 133361131,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.013714,
+      "winRate": 0.552,
+      "maxDD": 0.0563,
+      "sharpe": 10.85,
+      "calmar": 60.92,
+      "capital": 132404174,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.017378,
+      "winRate": 0.5683,
+      "maxDD": 0.0741,
+      "sharpe": 12.92,
+      "calmar": 58.64,
+      "capital": 306739773,
+      "tradeDays": 242
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.05,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.015393,
+      "winRate": 0.5484,
+      "maxDD": 0.0678,
+      "sharpe": 11.71,
+      "calmar": 56.75,
+      "capital": 185986796,
+      "tradeDays": 240
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 1,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.01249,
+      "winRate": 0.5473,
+      "maxDD": 0.0559,
+      "sharpe": 10.43,
+      "calmar": 55.86,
+      "capital": 99077205,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 1,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.012429,
+      "winRate": 0.5468,
+      "maxDD": 0.0559,
+      "sharpe": 10.4,
+      "calmar": 55.58,
+      "capital": 97632020,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 500000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.01636,
+      "winRate": 0.5657,
+      "maxDD": 0.0741,
+      "sharpe": 12.25,
+      "calmar": 55.21,
+      "capital": 240920929,
+      "tradeDays": 242
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016414,
+      "winRate": 0.5596,
+      "maxDD": 0.0747,
+      "sharpe": 12.55,
+      "calmar": 54.94,
+      "capital": 252527323,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.017025,
+      "winRate": 0.5691,
+      "maxDD": 0.0776,
+      "sharpe": 13.45,
+      "calmar": 54.87,
+      "capital": 293385882,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016258,
+      "winRate": 0.5568,
+      "maxDD": 0.0741,
+      "sharpe": 12.74,
+      "calmar": 54.86,
+      "capital": 243870184,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016232,
+      "winRate": 0.5557,
+      "maxDD": 0.0741,
+      "sharpe": 12.71,
+      "calmar": 54.77,
+      "capital": 242313062,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016224,
+      "winRate": 0.5561,
+      "maxDD": 0.0741,
+      "sharpe": 12.7,
+      "calmar": 54.75,
+      "capital": 241846058,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016189,
+      "winRate": 0.5557,
+      "maxDD": 0.0741,
+      "sharpe": 12.67,
+      "calmar": 54.63,
+      "capital": 239849513,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016184,
+      "winRate": 0.5552,
+      "maxDD": 0.0741,
+      "sharpe": 12.67,
+      "calmar": 54.61,
+      "capital": 239533263,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 1,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.012189,
+      "winRate": 0.5408,
+      "maxDD": 0.0559,
+      "sharpe": 10.08,
+      "calmar": 54.51,
+      "capital": 92052454,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016811,
+      "winRate": 0.5659,
+      "maxDD": 0.0776,
+      "sharpe": 13.16,
+      "calmar": 54.18,
+      "capital": 278451169,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016811,
+      "winRate": 0.5659,
+      "maxDD": 0.0776,
+      "sharpe": 13.16,
+      "calmar": 54.18,
+      "capital": 278451169,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.016811,
+      "winRate": 0.5659,
+      "maxDD": 0.0776,
+      "sharpe": 13.16,
+      "calmar": 54.18,
+      "capital": 278451169,
+      "tradeDays": 244
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.017237,
+      "winRate": 0.568,
+      "maxDD": 0.0796,
+      "sharpe": 12.73,
+      "calmar": 54.16,
+      "capital": 296370991,
+      "tradeDays": 242
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 1,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "avgDaily": 0.012102,
+      "winRate": 0.54,
+      "maxDD": 0.0559,
+      "sharpe": 10.03,
+      "calmar": 54.12,
+      "capital": 90158140,
+      "tradeDays": 244
+    }
+  ],
+  "walkForward": [
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016567,
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016567,
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016567,
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016567,
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016567,
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016567,
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016641,
+      "testAvg": 0.024857,
+      "wfEff": 1.494,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016467,
+      "testAvg": 0.024537,
+      "wfEff": 1.49,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016467,
+      "testAvg": 0.024537,
+      "wfEff": 1.49,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016558,
+      "testAvg": 0.024536,
+      "wfEff": 1.482,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016789,
+      "testAvg": 0.022094,
+      "wfEff": 1.316,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016475,
+      "testAvg": 0.02201,
+      "wfEff": 1.336,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016475,
+      "testAvg": 0.02201,
+      "wfEff": 1.336,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016475,
+      "testAvg": 0.02201,
+      "wfEff": 1.336,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016475,
+      "testAvg": 0.021986,
+      "wfEff": 1.335,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016475,
+      "testAvg": 0.021982,
+      "wfEff": 1.334,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016507,
+      "testAvg": 0.021914,
+      "wfEff": 1.328,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016821,
+      "testAvg": 0.021702,
+      "wfEff": 1.29,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016365,
+      "testAvg": 0.021596,
+      "wfEff": 1.32,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016365,
+      "testAvg": 0.021596,
+      "wfEff": 1.32,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.015172,
+      "testAvg": 0.020331,
+      "wfEff": 1.34,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.014937,
+      "testAvg": 0.020165,
+      "wfEff": 1.35,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.014937,
+      "testAvg": 0.020165,
+      "wfEff": 1.35,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.014937,
+      "testAvg": 0.020165,
+      "wfEff": 1.35,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.014914,
+      "testAvg": 0.020137,
+      "wfEff": 1.35,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.014937,
+      "testAvg": 0.019936,
+      "wfEff": 1.335,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.014937,
+      "testAvg": 0.019936,
+      "wfEff": 1.335,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.016352,
+      "testAvg": 0.018889,
+      "wfEff": 1.155,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.01632,
+      "testAvg": 0.018591,
+      "wfEff": 1.139,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.015027,
+      "testAvg": 0.018302,
+      "wfEff": 1.218,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011822,
+      "testAvg": 0.018214,
+      "wfEff": 1.541,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.015298,
+      "testAvg": 0.018197,
+      "wfEff": 1.189,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011513,
+      "testAvg": 0.018031,
+      "wfEff": 1.566,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011503,
+      "testAvg": 0.018031,
+      "wfEff": 1.567,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011503,
+      "testAvg": 0.018031,
+      "wfEff": 1.567,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.07,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011475,
+      "testAvg": 0.018003,
+      "wfEff": 1.569,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011503,
+      "testAvg": 0.017991,
+      "wfEff": 1.564,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 500000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.015293,
+      "testAvg": 0.017912,
+      "wfEff": 1.171,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.011503,
+      "testAvg": 0.017878,
+      "wfEff": 1.554,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.05,
+        "minUpperWick": 0,
+        "minGapUp": 0,
+        "minVolRatio5": 0,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.01401,
+      "testAvg": 0.017507,
+      "wfEff": 1.25,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 1,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.010799,
+      "testAvg": 0.01586,
+      "wfEff": 1.469,
+      "passCount": 3
+    },
+    {
+      "combo": {
+        "minVolPrice": 2000000000,
+        "minChangeRate": 0.1,
+        "minAtrPct": 0.03,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 1,
+        "maxLowerWick": 0.15
+      },
+      "sortKey": "changeRate",
+      "trainAvg": 0.010788,
+      "testAvg": 0.015709,
+      "wfEff": 1.456,
+      "passCount": 3
+    }
+  ],
+  "recommended": [
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": -1,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3,
+      "fullAvgDaily": 0.019306,
+      "fullMDD": 0.122
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3,
+      "fullAvgDaily": 0.019306,
+      "fullMDD": 0.122
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.02,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3,
+      "fullAvgDaily": 0.019306,
+      "fullMDD": 0.122
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.03,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3,
+      "fullAvgDaily": 0.019306,
+      "fullMDD": 0.122
+    },
+    {
+      "combo": {
+        "minVolPrice": 0,
+        "minChangeRate": 0.05,
+        "minAtrPct": 0,
+        "minUpperWick": 0,
+        "minGapUp": -1,
+        "minVolRatio5": 0,
+        "maxLowerWick": 1
+      },
+      "sortKey": "changeRate",
+      "testAvg": 0.024858,
+      "wfEff": 1.5,
+      "passCount": 3,
+      "fullAvgDaily": 0.019306,
+      "fullMDD": 0.122
+    }
+  ]
+}

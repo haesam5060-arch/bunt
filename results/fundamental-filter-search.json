@@ -1,0 +1,430 @@
+{
+  "meta": {
+    "dateFrom": "2025-03-19",
+    "dateTo": "2026-03-19",
+    "tradingDays": 244,
+    "cost": 0.00231,
+    "initCapital": 5000000,
+    "maxStocksPerDay": 10,
+    "baseCondition": "등락률≥20%, 종가=고가(100%), 갭업≥0%, 코스닥, 종가매수→익일시가매도",
+    "limitUpDiscount": "상한가(29%+) 수익률 50% 할인",
+    "note": "시총 데이터 미보유 → 거래대금 프록시 사용 (시총300억→거래대금5억, 500억→10억, 1000억→20억, 2000억→50억)",
+    "simulationMode": "필터 통과 종목 전부 매수 (최대 10개 캡), 복리",
+    "generatedAt": "2026-03-20T02:23:37.324Z"
+  },
+  "combos": [
+    {
+      "id": 1,
+      "name": "기본만 (베이스라인)"
+    },
+    {
+      "id": 2,
+      "name": "시총≥300억 (거래대금≥5억 프록시)"
+    },
+    {
+      "id": 3,
+      "name": "시총≥500억 (거래대금≥10억 프록시)"
+    },
+    {
+      "id": 4,
+      "name": "시총≥1000억 (거래대금≥20억 프록시)"
+    },
+    {
+      "id": 5,
+      "name": "시총≥2000억 (거래대금≥50억 프록시)"
+    },
+    {
+      "id": 6,
+      "name": "거래대금≥10억"
+    },
+    {
+      "id": 7,
+      "name": "거래대금≥30억"
+    },
+    {
+      "id": 8,
+      "name": "거래대금≥50억"
+    },
+    {
+      "id": 9,
+      "name": "거래대금≥100억"
+    },
+    {
+      "id": 10,
+      "name": "시총≥500억 + 거래대금≥10억"
+    },
+    {
+      "id": 11,
+      "name": "시총≥500억 + 거래대금≥30억"
+    },
+    {
+      "id": 12,
+      "name": "시총≥500억 + 거래대금≥50억"
+    },
+    {
+      "id": 13,
+      "name": "시총≥1000억 + 거래대금≥30억"
+    },
+    {
+      "id": 14,
+      "name": "시총≥1000억 + 거래대금≥50억"
+    },
+    {
+      "id": 15,
+      "name": "시총≥2000억 + 거래대금≥50억"
+    }
+  ],
+  "results": [
+    {
+      "comboId": 1,
+      "comboName": "기본만 (베이스라인)",
+      "label": "[#1] 기본만 (베이스라인)",
+      "avgPerTrade": 0.8819,
+      "winRate": 78.64,
+      "avgDaily": 3.9907,
+      "avgStocksPerDay": 4.5,
+      "maxDD": 10.57,
+      "calmar": 128738.39,
+      "totalTrades": 1086,
+      "tradeDays": 240,
+      "capital": 54148448193,
+      "annualReturn": 1360805.22
+    },
+    {
+      "comboId": 2,
+      "comboName": "시총≥300억 (거래대금≥5억 프록시)",
+      "label": "[#2] 시총≥300억 (거래대금≥5억 프록시)",
+      "avgPerTrade": 0.8702,
+      "winRate": 78.36,
+      "avgDaily": 3.8869,
+      "avgStocksPerDay": 4.5,
+      "maxDD": 10.57,
+      "calmar": 100980.9,
+      "totalTrades": 1072,
+      "tradeDays": 240,
+      "capital": 42722535237,
+      "annualReturn": 1067399.89
+    },
+    {
+      "comboId": 3,
+      "comboName": "시총≥500억 (거래대금≥10억 프록시)",
+      "label": "[#3] 시총≥500억 (거래대금≥10억 프록시)",
+      "avgPerTrade": 0.837,
+      "winRate": 78.45,
+      "avgDaily": 3.6408,
+      "avgStocksPerDay": 4.3,
+      "maxDD": 9.83,
+      "calmar": 60425.87,
+      "totalTrades": 1044,
+      "tradeDays": 240,
+      "capital": 24102697040,
+      "annualReturn": 593731.95
+    },
+    {
+      "comboId": 4,
+      "comboName": "시총≥1000억 (거래대금≥20억 프록시)",
+      "label": "[#4] 시총≥1000억 (거래대금≥20억 프록시)",
+      "avgPerTrade": 0.8292,
+      "winRate": 78.32,
+      "avgDaily": 3.4386,
+      "avgStocksPerDay": 4.1,
+      "maxDD": 10.19,
+      "calmar": 33915.46,
+      "totalTrades": 987,
+      "tradeDays": 238,
+      "capital": 14220004027,
+      "annualReturn": 345729.8
+    },
+    {
+      "comboId": 5,
+      "comboName": "시총≥2000억 (거래대금≥50억 프록시)",
+      "label": "[#5] 시총≥2000억 (거래대금≥50억 프록시)",
+      "avgPerTrade": 0.8501,
+      "winRate": 77.09,
+      "avgDaily": 2.9173,
+      "avgStocksPerDay": 3.4,
+      "maxDD": 10.19,
+      "calmar": 8824.94,
+      "totalTrades": 803,
+      "tradeDays": 234,
+      "capital": 3824676559,
+      "annualReturn": 89960.33
+    },
+    {
+      "comboId": 6,
+      "comboName": "거래대금≥10억",
+      "label": "[#6] 거래대금≥10억",
+      "avgPerTrade": 0.837,
+      "winRate": 78.45,
+      "avgDaily": 3.6408,
+      "avgStocksPerDay": 4.3,
+      "maxDD": 9.83,
+      "calmar": 60425.87,
+      "totalTrades": 1044,
+      "tradeDays": 240,
+      "capital": 24102697040,
+      "annualReturn": 593731.95
+    },
+    {
+      "comboId": 7,
+      "comboName": "거래대금≥30억",
+      "label": "[#7] 거래대금≥30억",
+      "avgPerTrade": 0.8261,
+      "winRate": 78.16,
+      "avgDaily": 3.2026,
+      "avgStocksPerDay": 3.9,
+      "maxDD": 10.19,
+      "calmar": 17624.09,
+      "totalTrades": 911,
+      "tradeDays": 235,
+      "capital": 7508359611,
+      "annualReturn": 179657.72
+    },
+    {
+      "comboId": 8,
+      "comboName": "거래대금≥50억",
+      "label": "[#8] 거래대금≥50억",
+      "avgPerTrade": 0.8501,
+      "winRate": 77.09,
+      "avgDaily": 2.9173,
+      "avgStocksPerDay": 3.4,
+      "maxDD": 10.19,
+      "calmar": 8824.94,
+      "totalTrades": 803,
+      "tradeDays": 234,
+      "capital": 3824676559,
+      "annualReturn": 89960.33
+    },
+    {
+      "comboId": 9,
+      "comboName": "거래대금≥100억",
+      "label": "[#9] 거래대금≥100억",
+      "avgPerTrade": 0.9145,
+      "winRate": 75.55,
+      "avgDaily": 2.6281,
+      "avgStocksPerDay": 2.9,
+      "maxDD": 12.53,
+      "calmar": 2654.22,
+      "totalTrades": 638,
+      "tradeDays": 222,
+      "capital": 1450909781,
+      "annualReturn": 33260.14
+    },
+    {
+      "comboId": 10,
+      "comboName": "시총≥500억 + 거래대금≥10억",
+      "label": "[#10] 시총≥500억 + 거래대금≥10억",
+      "avgPerTrade": 0.837,
+      "winRate": 78.45,
+      "avgDaily": 3.6408,
+      "avgStocksPerDay": 4.3,
+      "maxDD": 9.83,
+      "calmar": 60425.87,
+      "totalTrades": 1044,
+      "tradeDays": 240,
+      "capital": 24102697040,
+      "annualReturn": 593731.95
+    },
+    {
+      "comboId": 11,
+      "comboName": "시총≥500억 + 거래대금≥30억",
+      "label": "[#11] 시총≥500억 + 거래대금≥30억",
+      "avgPerTrade": 0.8261,
+      "winRate": 78.16,
+      "avgDaily": 3.2026,
+      "avgStocksPerDay": 3.9,
+      "maxDD": 10.19,
+      "calmar": 17624.09,
+      "totalTrades": 911,
+      "tradeDays": 235,
+      "capital": 7508359611,
+      "annualReturn": 179657.72
+    },
+    {
+      "comboId": 12,
+      "comboName": "시총≥500억 + 거래대금≥50억",
+      "label": "[#12] 시총≥500억 + 거래대금≥50억",
+      "avgPerTrade": 0.8501,
+      "winRate": 77.09,
+      "avgDaily": 2.9173,
+      "avgStocksPerDay": 3.4,
+      "maxDD": 10.19,
+      "calmar": 8824.94,
+      "totalTrades": 803,
+      "tradeDays": 234,
+      "capital": 3824676559,
+      "annualReturn": 89960.33
+    },
+    {
+      "comboId": 13,
+      "comboName": "시총≥1000억 + 거래대금≥30억",
+      "label": "[#13] 시총≥1000억 + 거래대금≥30억",
+      "avgPerTrade": 0.8261,
+      "winRate": 78.16,
+      "avgDaily": 3.2026,
+      "avgStocksPerDay": 3.9,
+      "maxDD": 10.19,
+      "calmar": 17624.09,
+      "totalTrades": 911,
+      "tradeDays": 235,
+      "capital": 7508359611,
+      "annualReturn": 179657.72
+    },
+    {
+      "comboId": 14,
+      "comboName": "시총≥1000억 + 거래대금≥50억",
+      "label": "[#14] 시총≥1000억 + 거래대금≥50억",
+      "avgPerTrade": 0.8501,
+      "winRate": 77.09,
+      "avgDaily": 2.9173,
+      "avgStocksPerDay": 3.4,
+      "maxDD": 10.19,
+      "calmar": 8824.94,
+      "totalTrades": 803,
+      "tradeDays": 234,
+      "capital": 3824676559,
+      "annualReturn": 89960.33
+    },
+    {
+      "comboId": 15,
+      "comboName": "시총≥2000억 + 거래대금≥50억",
+      "label": "[#15] 시총≥2000억 + 거래대금≥50억",
+      "avgPerTrade": 0.8501,
+      "winRate": 77.09,
+      "avgDaily": 2.9173,
+      "avgStocksPerDay": 3.4,
+      "maxDD": 10.19,
+      "calmar": 8824.94,
+      "totalTrades": 803,
+      "tradeDays": 234,
+      "capital": 3824676559,
+      "annualReturn": 89960.33
+    }
+  ],
+  "ranking": {
+    "byAvgPerTrade": [
+      {
+        "label": "[#9] 거래대금≥100억",
+        "avgPerTrade": 0.9145,
+        "winRate": 75.55,
+        "avgDaily": 2.6281,
+        "avgStocksPerDay": 2.9,
+        "maxDD": 12.53,
+        "calmar": 2654.22,
+        "totalTrades": 638,
+        "capital": 1450909781,
+        "annualReturn": 33260.14
+      },
+      {
+        "label": "[#1] 기본만 (베이스라인)",
+        "avgPerTrade": 0.8819,
+        "winRate": 78.64,
+        "avgDaily": 3.9907,
+        "avgStocksPerDay": 4.5,
+        "maxDD": 10.57,
+        "calmar": 128738.39,
+        "totalTrades": 1086,
+        "capital": 54148448193,
+        "annualReturn": 1360805.22
+      },
+      {
+        "label": "[#2] 시총≥300억 (거래대금≥5억 프록시)",
+        "avgPerTrade": 0.8702,
+        "winRate": 78.36,
+        "avgDaily": 3.8869,
+        "avgStocksPerDay": 4.5,
+        "maxDD": 10.57,
+        "calmar": 100980.9,
+        "totalTrades": 1072,
+        "capital": 42722535237,
+        "annualReturn": 1067399.89
+      },
+      {
+        "label": "[#5] 시총≥2000억 (거래대금≥50억 프록시)",
+        "avgPerTrade": 0.8501,
+        "winRate": 77.09,
+        "avgDaily": 2.9173,
+        "avgStocksPerDay": 3.4,
+        "maxDD": 10.19,
+        "calmar": 8824.94,
+        "totalTrades": 803,
+        "capital": 3824676559,
+        "annualReturn": 89960.33
+      },
+      {
+        "label": "[#8] 거래대금≥50억",
+        "avgPerTrade": 0.8501,
+        "winRate": 77.09,
+        "avgDaily": 2.9173,
+        "avgStocksPerDay": 3.4,
+        "maxDD": 10.19,
+        "calmar": 8824.94,
+        "totalTrades": 803,
+        "capital": 3824676559,
+        "annualReturn": 89960.33
+      }
+    ],
+    "byCalmar": [
+      {
+        "label": "[#1] 기본만 (베이스라인)",
+        "avgPerTrade": 0.8819,
+        "winRate": 78.64,
+        "avgDaily": 3.9907,
+        "avgStocksPerDay": 4.5,
+        "maxDD": 10.57,
+        "calmar": 128738.39,
+        "totalTrades": 1086,
+        "capital": 54148448193,
+        "annualReturn": 1360805.22
+      },
+      {
+        "label": "[#2] 시총≥300억 (거래대금≥5억 프록시)",
+        "avgPerTrade": 0.8702,
+        "winRate": 78.36,
+        "avgDaily": 3.8869,
+        "avgStocksPerDay": 4.5,
+        "maxDD": 10.57,
+        "calmar": 100980.9,
+        "totalTrades": 1072,
+        "capital": 42722535237,
+        "annualReturn": 1067399.89
+      },
+      {
+        "label": "[#3] 시총≥500억 (거래대금≥10억 프록시)",
+        "avgPerTrade": 0.837,
+        "winRate": 78.45,
+        "avgDaily": 3.6408,
+        "avgStocksPerDay": 4.3,
+        "maxDD": 9.83,
+        "calmar": 60425.87,
+        "totalTrades": 1044,
+        "capital": 24102697040,
+        "annualReturn": 593731.95
+      },
+      {
+        "label": "[#6] 거래대금≥10억",
+        "avgPerTrade": 0.837,
+        "winRate": 78.45,
+        "avgDaily": 3.6408,
+        "avgStocksPerDay": 4.3,
+        "maxDD": 9.83,
+        "calmar": 60425.87,
+        "totalTrades": 1044,
+        "capital": 24102697040,
+        "annualReturn": 593731.95
+      },
+      {
+        "label": "[#10] 시총≥500억 + 거래대금≥10억",
+        "avgPerTrade": 0.837,
+        "winRate": 78.45,
+        "avgDaily": 3.6408,
+        "avgStocksPerDay": 4.3,
+        "maxDD": 9.83,
+        "calmar": 60425.87,
+        "totalTrades": 1044,
+        "capital": 24102697040,
+        "annualReturn": 593731.95
+      }
+    ]
+  }
+}

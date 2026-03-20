@@ -1,0 +1,21 @@
+{
+  "name": "bunt",
+  "version": "1.0.0",
+  "description": "번트(BUNT) - 코스닥 오버나잇 자동매매 엔진",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "ic": "node engine/ic-analysis.js",
+    "grid": "node engine/grid-search.js",
+    "wf": "node engine/walk-forward.js",
+    "quality": "node engine/quality-filter.js",
+    "deep": "node engine/deep-analysis.js",
+    "reverse": "node engine/reverse-analysis.js",
+    "optimal": "node engine/optimal-filter.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "node-cron": "^3.0.0",
+    "nodemailer": "^8.0.3"
+  }
+}

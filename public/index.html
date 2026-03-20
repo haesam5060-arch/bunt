@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>번트(BUNT) - 오버나잇 자동매매</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --border: #1e1e2e;
+      --text: #e0e0e0;
+      --dim: #888;
+      --accent: #4fc3f7;
+      --green: #4caf50;
+      --red: #ef5350;
+      --yellow: #ffd54f;
+      --orange: #ff9800;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Consolas', monospace; font-size: 13px; }
+
+    /* ═══ 실전투자 모드 — 전체 테마 오버라이드 ═══ */
+    body.mode-real { --border: #3d1515; --card: #1a0e0e; }
+    body.mode-real .header {
+      background: linear-gradient(135deg, #2a0a0a 0%, #3d1212 100%);
+      border-bottom: 2px solid var(--red);
+    }
+    body.mode-real .header h1 span { color: var(--red); }
+    body.mode-real .stat-card { border-color: #3d1515; }
+    body.mode-real .schedule-bar { background: #1a0e0e; border-bottom-color: #3d1515; }
+    body.mode-real .schedule-bar .next { color: var(--red); }
+    body.mode-real .section-title { border-bottom-color: #3d1515; }
+    body.mode-real .log-box { border-color: #3d1515; }
+    body.mode-real table th, body.mode-real table td { border-bottom-color: #3d1515; }
+
+    /* 실전 경고 배너 */
+    .real-banner {
+      display: none; padding: 10px 20px; text-align: center;
+      background: linear-gradient(90deg, #b71c1c, #d32f2f, #b71c1c);
+      color: #fff; font-weight: 700; font-size: 13px; letter-spacing: 2px;
+      animation: bannerPulse 2s ease-in-out infinite;
+    }
+    body.mode-real .real-banner { display: block; }
+    @keyframes bannerPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* ── 헤더 ─────────────────────────────── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #12121a 0%, #1a1a2e 100%);
+      flex-wrap: wrap; gap: 8px;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header h1 { font-size: 18px; font-weight: 700; white-space: nowrap; }
+    .header h1 span { color: var(--accent); }
+    .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    .toggle-btn {
+      padding: 8px 20px; border: none; border-radius: 6px;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; min-width: 90px;
+    }
+    .toggle-btn.on { background: var(--red); color: #fff; animation: btnPulse 1.5s ease-in-out infinite; }
+    .toggle-btn.off { background: var(--green); color: #fff; opacity: 0.85; }
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,83,80,0.4); }
+      50% { box-shadow: 0 0 12px 4px rgba(239,83,80,0.3); }
+    }
+
+    .preset-select {
+      background: var(--card); color: var(--text); border: 1px solid var(--border);
+      padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 13px;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+    /* ── 모드 라벨 ────────────────────────── */
+    .mode-label {
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 4px; letter-spacing: 1px;
+    }
+    .mode-label.paper { background: rgba(76,175,80,0.15); color: var(--green); }
+    .mode-label.real { background: rgba(239,83,80,0.25); color: var(--red); border: 1px solid var(--red); }
+
+    /* ── 스케줄 바 ────────────────────────── */
+    .schedule-bar {
+      display: flex; gap: 16px; align-items: center; justify-content: center;
+      padding: 10px 20px; background: var(--card); border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--dim); flex-wrap: wrap;
+    }
+    .schedule-bar .next { color: var(--accent); font-weight: 600; }
+    .preset-desc { font-size: 11px; color: var(--dim); max-width: 400px; }
+
+    /* ── 통계 카드 ────────────────────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px;
+    }
+    .stat-label { color: var(--dim); font-size: 11px; text-transform: uppercase; margin-bottom: 4px; }
+    .stat-value { font-size: 20px; font-weight: 700; }
+    .stat-value.positive { color: var(--green); }
+    .stat-value.negative { color: var(--red); }
+
+    .section { margin-bottom: 20px; }
+    .section-title {
+      font-size: 14px; font-weight: 600; margin-bottom: 12px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+
+    /* ── 액션 버튼 ────────────────────────── */
+    .actions { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn {
+      padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); color: var(--text); font-family: inherit;
+      font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .btn.danger { border-color: var(--red); color: var(--red); }
+    .btn.danger:hover { background: rgba(239, 83, 80, 0.1); }
+    .btn.loading { position: relative; color: transparent; }
+    .btn.loading::after {
+      content: ''; position: absolute; left: 50%; top: 50%;
+      width: 14px; height: 14px; margin: -7px 0 0 -7px;
+      border: 2px solid var(--dim); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 테이블 ───────────────────────────── */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--dim); font-size: 11px; text-transform: uppercase; font-weight: 600; }
+    td { font-size: 12px; }
+    tr:hover { background: rgba(79, 195, 247, 0.05); }
+    .pnl-pos { color: var(--green); }
+    .pnl-neg { color: var(--red); }
+    .empty-msg { padding: 20px; text-align: center; color: var(--dim); font-size: 12px; }
+
+    /* ── 로그 ─────────────────────────────── */
+    .log-box {
+      background: #080810; border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px; max-height: 300px; overflow-y: auto; font-size: 11px; line-height: 1.6;
+    }
+    .log-info { color: var(--dim); }
+    .log-warn { color: var(--yellow); }
+    .log-error { color: var(--red); }
+
+    /* ── 배지 / 토스트 ────────────────────── */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 600;
+    }
+    .badge-paper { background: rgba(76, 175, 80, 0.15); color: var(--green); }
+    .badge-real { background: rgba(239, 83, 80, 0.2); color: var(--red); }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      font-size: 12px; z-index: 999; animation: fadeIn 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+      .header { padding: 12px 16px; }
+      .container { padding: 12px; }
+      .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    }
+
+    .timing { font-size: 11px; color: var(--dim); margin-top: 4px; }
+    #refreshTimer { color: var(--dim); font-size: 11px; }
+  </style>
+</head>
+<body>
+  <!-- 실전 경고 배너 -->
+  <div class="real-banner">LIVE TRADING — REAL MONEY</div>
+
+  <div class="header">
+    <div class="header-left">
+      <h1><span>BUNT</span> 번트 오버나잇</h1>
+      <span id="modeLabel" class="mode-label paper">PAPER 모의투자</span>
+    </div>
+    <div class="header-right">
+      <span id="refreshTimer">--</span>
+      <select id="presetSelect" class="preset-select">
+        <option value="aggressive">공격형</option>
+        <option value="balanced">균형형</option>
+        <option value="stable">안정형</option>
+      </select>
+      <button id="toggleBtn" class="toggle-btn off" onclick="toggleEngine()">OFF 모의</button>
+    </div>
+  </div>
+
+  <!-- 스케줄 & 프리셋 설명 바 -->
+  <div class="schedule-bar">
+    <span>매수 <span class="next" id="nextBuy">16:25</span></span>
+    <span>매도 <span class="next" id="nextSell">08:50</span></span>
+    <span>|</span>
+    <span id="presetDesc" class="preset-desc">--</span>
+  </div>
+
+  <div class="container">
+    <!-- 통계 카드 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">누적 손익</div>
+        <div class="stat-value" id="totalPnl">0원</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">승률</div>
+        <div class="stat-value" id="winRate">--%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">거래일수</div>
+        <div class="stat-value" id="tradingDays">0일</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">현재 보유</div>
+        <div class="stat-value" id="positionCount">0종목</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">예수금</div>
+        <div class="stat-value" id="deposit">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">MDD</div>
+        <div class="stat-value" id="maxDD">--%</div>
+      </div>
+    </div>
+
+    <!-- 수동 실행 -->
+    <div class="actions">
+      <button class="btn" id="btnScan" onclick="manualScan(this)">스캔</button>
+      <button class="btn" id="btnBuy" onclick="manualBuy(this)">수동 매수</button>
+      <button class="btn danger" id="btnSell" onclick="manualSell(this)">수동 매도</button>
+      <button class="btn" onclick="refreshAll()">새로고침</button>
+    </div>
+
+    <div class="two-col">
+      <!-- 보유 종목 -->
+      <div class="section">
+        <div class="section-title">보유 종목</div>
+        <table>
+          <thead><tr><th>종목</th><th>수량</th><th>매수가</th><th>등락률</th></tr></thead>
+          <tbody id="positionsTable"></tbody>
+        </table>
+      </div>
+
+      <!-- 최근 스캔 결과 -->
+      <div class="section">
+        <div class="section-title">최근 스캔 <span id="scanTiming" class="timing"></span></div>
+        <table>
+          <thead><tr><th>종목</th><th>종가</th><th>등락률</th><th>종/고</th></tr></thead>
+          <tbody id="scanTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- 일별 PnL -->
+      <div class="section">
+        <div class="section-title">일별 손익 (최근 30일)</div>
+        <table>
+          <thead><tr><th>날짜</th><th>종목수</th><th>손익</th></tr></thead>
+          <tbody id="pnlTable"></tbody>
+        </table>
+      </div>
+
+      <!-- 엔진 로그 -->
+      <div class="section">
+        <div class="section-title">엔진 로그</div>
+        <div class="log-box" id="logBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

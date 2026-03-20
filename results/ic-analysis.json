@@ -1,0 +1,233 @@
+{
+  "meta": {
+    "stocks": 1715,
+    "samples": 2100657,
+    "period": "2020-03-30 ~ 2026-03-16",
+    "excludeUpperLimit": true,
+    "excludeLowerLimit": true
+  },
+  "baseStats": {
+    "avgOvernight": 0.0010508908309921523,
+    "medianOvernight": 0,
+    "stdOvernight": 0.016626474408720514,
+    "positiveRate": 0.4066318299465358
+  },
+  "icResults": [
+    {
+      "name": "consec_up",
+      "ic": 0.0644,
+      "top20Avg": 0.2187,
+      "bot20Avg": 0.039,
+      "top20WR": 44.55,
+      "bot20WR": 37.81,
+      "spread": 0.1797
+    },
+    {
+      "name": "gap_up",
+      "ic": 0.06391,
+      "top20Avg": 0.2309,
+      "bot20Avg": 0.0493,
+      "top20WR": 46.54,
+      "bot20WR": 39.11,
+      "spread": 0.1816
+    },
+    {
+      "name": "lower_wick",
+      "ic": -0.06231,
+      "top20Avg": -0.0163,
+      "bot20Avg": 0.1649,
+      "top20WR": 34.11,
+      "bot20WR": 43.54,
+      "spread": -0.1811
+    },
+    {
+      "name": "upper_wick",
+      "ic": 0.05552,
+      "top20Avg": 0.2035,
+      "bot20Avg": 0.0468,
+      "top20WR": 44.99,
+      "bot20WR": 36.8,
+      "spread": 0.1567
+    },
+    {
+      "name": "vol_price",
+      "ic": 0.05511,
+      "top20Avg": 0.2318,
+      "bot20Avg": 0.0468,
+      "top20WR": 49.19,
+      "bot20WR": 32.46,
+      "spread": 0.185
+    },
+    {
+      "name": "ma5_dist",
+      "ic": 0.04551,
+      "top20Avg": 0.2674,
+      "bot20Avg": 0.0235,
+      "top20WR": 45.61,
+      "bot20WR": 39.84,
+      "spread": 0.2439
+    },
+    {
+      "name": "atr_pct",
+      "ic": 0.04203,
+      "top20Avg": 0.2089,
+      "bot20Avg": 0.0205,
+      "top20WR": 44.74,
+      "bot20WR": 35.31,
+      "spread": 0.1883
+    },
+    {
+      "name": "change_rate",
+      "ic": 0.03963,
+      "top20Avg": 0.251,
+      "bot20Avg": 0.0615,
+      "top20WR": 45.71,
+      "bot20WR": 40.86,
+      "spread": 0.1895
+    },
+    {
+      "name": "close_vs_high",
+      "ic": -0.03648,
+      "top20Avg": 0.0386,
+      "bot20Avg": 0.172,
+      "top20WR": 36.41,
+      "bot20WR": 44.18,
+      "spread": -0.1333
+    },
+    {
+      "name": "low_vs_open",
+      "ic": 0.03224,
+      "top20Avg": 0.1541,
+      "bot20Avg": 0.0694,
+      "top20WR": 42.39,
+      "bot20WR": 40.32,
+      "spread": 0.0847
+    },
+    {
+      "name": "bb_pos",
+      "ic": 0.02906,
+      "top20Avg": 0.2014,
+      "bot20Avg": 0.0144,
+      "top20WR": 42.82,
+      "bot20WR": 38.31,
+      "spread": 0.187
+    },
+    {
+      "name": "ret_5d",
+      "ic": 0.0261,
+      "top20Avg": 0.231,
+      "bot20Avg": 0.0516,
+      "top20WR": 44.39,
+      "bot20WR": 40.98,
+      "spread": 0.1794
+    },
+    {
+      "name": "ma5_slope",
+      "ic": 0.02606,
+      "top20Avg": 0.2322,
+      "bot20Avg": 0.0524,
+      "top20WR": 44.43,
+      "bot20WR": 41.01,
+      "spread": 0.1798
+    },
+    {
+      "name": "vol_ratio_5",
+      "ic": 0.02275,
+      "top20Avg": 0.2049,
+      "bot20Avg": 0.0532,
+      "top20WR": 42.75,
+      "bot20WR": 38.94,
+      "spread": 0.1518
+    },
+    {
+      "name": "range_pct",
+      "ic": 0.02145,
+      "top20Avg": 0.2094,
+      "bot20Avg": 0.046,
+      "top20WR": 44.01,
+      "bot20WR": 36.99,
+      "spread": 0.1634
+    },
+    {
+      "name": "ma20_dist",
+      "ic": 0.01929,
+      "top20Avg": 0.2205,
+      "bot20Avg": 0.0644,
+      "top20WR": 44.22,
+      "bot20WR": 41.34,
+      "spread": 0.1561
+    },
+    {
+      "name": "vol_ratio_10",
+      "ic": 0.01824,
+      "top20Avg": 0.2095,
+      "bot20Avg": 0.0586,
+      "top20WR": 42.87,
+      "bot20WR": 39.33,
+      "spread": 0.151
+    },
+    {
+      "name": "ret_10d",
+      "ic": 0.01683,
+      "top20Avg": 0.2101,
+      "bot20Avg": 0.0737,
+      "top20WR": 43.78,
+      "bot20WR": 41.59,
+      "spread": 0.1365
+    },
+    {
+      "name": "ma60_dist",
+      "ic": 0.0156,
+      "top20Avg": 0.1866,
+      "bot20Avg": 0.0774,
+      "top20WR": 44.4,
+      "bot20WR": 40.79,
+      "spread": 0.1092
+    },
+    {
+      "name": "vol_ratio_20",
+      "ic": 0.01532,
+      "top20Avg": 0.2173,
+      "bot20Avg": 0.066,
+      "top20WR": 43.11,
+      "bot20WR": 39.61,
+      "spread": 0.1513
+    },
+    {
+      "name": "rsi_14",
+      "ic": 0.0152,
+      "top20Avg": 0.1711,
+      "bot20Avg": 0.045,
+      "top20WR": 42.09,
+      "bot20WR": 39.39,
+      "spread": 0.1261
+    },
+    {
+      "name": "ret_20d",
+      "ic": 0.0107,
+      "top20Avg": 0.1907,
+      "bot20Avg": 0.0931,
+      "top20WR": 44.08,
+      "bot20WR": 41.78,
+      "spread": 0.0976
+    },
+    {
+      "name": "body_ratio",
+      "ic": 0.00794,
+      "top20Avg": 0.1593,
+      "bot20Avg": 0.0898,
+      "top20WR": 41.96,
+      "bot20WR": 41.56,
+      "spread": 0.0695
+    },
+    {
+      "name": "high_dist_20d",
+      "ic": -0.00689,
+      "top20Avg": 0.123,
+      "bot20Avg": 0.1291,
+      "top20WR": 39.51,
+      "bot20WR": 42.95,
+      "spread": -0.0061
+    }
+  ]
+}

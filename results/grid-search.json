@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "totalCombos": 19200,
+    "viable": 4,
+    "costs": 0.0031,
+    "period": "2020-03-30~2026-03-17"
+  },
+  "top20_sharpe": [
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": -1
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7
+    },
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": 0
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7
+    },
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": 0.01
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7
+    },
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": 0.02
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7
+    }
+  ],
+  "top20_wr55": [],
+  "top10_balanced": [
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": -1
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7,
+      "score": 0.000429
+    },
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": 0
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7,
+      "score": 0.000429
+    },
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": 0.01
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7,
+      "score": 0.000429
+    },
+    {
+      "combo": {
+        "minVolPrice": 10000000000,
+        "minConsecUp": 3,
+        "maxLowerWick": 0.1,
+        "minChangeRate": 0.05,
+        "maxChangeRate": 0.1,
+        "minGapUp": 0.01,
+        "minMa5Dist": 0.02
+      },
+      "winRate": 0.4811,
+      "avgDaily": 0.000306,
+      "maxDD": 0.3427,
+      "sharpe": 0.24,
+      "tradingDays": 292,
+      "totalTrades": 794,
+      "finalCapital": 5164971,
+      "avgStocksPerDay": 2.7,
+      "score": 0.000429
+    }
+  ]
+}

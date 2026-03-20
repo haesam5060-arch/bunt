@@ -1,0 +1,311 @@
+{
+  "period": {
+    "from": "2025-03-17",
+    "to": "2026-03-17"
+  },
+  "baseWinRate": 0.3409016653011164,
+  "totalSamples": 397886,
+  "winSamples": 135640,
+  "features": [
+    {
+      "feature": "closeVsHigh",
+      "direction": "낮을수록↓",
+      "cohensD": -0.2,
+      "tStat": -58.37,
+      "winMean": 0.97167,
+      "lossMean": 0.97696,
+      "topQuintileWR": 0.2636,
+      "botQuintileWR": 0.4118
+    },
+    {
+      "feature": "absChangeRate",
+      "direction": "높을수록↑",
+      "cohensD": 0.1901,
+      "tStat": 55.27,
+      "winMean": 0.025523,
+      "lossMean": 0.020219,
+      "topQuintileWR": 0.4222,
+      "botQuintileWR": 0.2876
+    },
+    {
+      "feature": "rangePct",
+      "direction": "높을수록↑",
+      "cohensD": 0.1772,
+      "tStat": 51.95,
+      "winMean": 0.051859,
+      "lossMean": 0.044893,
+      "topQuintileWR": 0.4072,
+      "botQuintileWR": 0.2727
+    },
+    {
+      "feature": "lowerWick",
+      "direction": "낮을수록↓",
+      "cohensD": -0.1551,
+      "tStat": -47,
+      "winMean": 0.263023,
+      "lossMean": 0.298357,
+      "topQuintileWR": 0.2628,
+      "botQuintileWR": 0.36
+    },
+    {
+      "feature": "atrPct",
+      "direction": "높을수록↑",
+      "cohensD": 0.1439,
+      "tStat": 43.19,
+      "winMean": 0.053394,
+      "lossMean": 0.047944,
+      "topQuintileWR": 0.4076,
+      "botQuintileWR": 0.2571
+    },
+    {
+      "feature": "lowDist20",
+      "direction": "높을수록↑",
+      "cohensD": 0.1331,
+      "tStat": 38.91,
+      "winMean": 0.133095,
+      "lossMean": 0.111409,
+      "topQuintileWR": 0.4083,
+      "botQuintileWR": 0.3254
+    },
+    {
+      "feature": "lowVsOpen",
+      "direction": "낮을수록↓",
+      "cohensD": -0.1248,
+      "tStat": -36.41,
+      "winMean": 0.974749,
+      "lossMean": 0.977731,
+      "topQuintileWR": 0.3196,
+      "botQuintileWR": 0.3852
+    },
+    {
+      "feature": "highDist20",
+      "direction": "낮을수록↓",
+      "cohensD": -0.1235,
+      "tStat": -36.64,
+      "winMean": -0.121546,
+      "lossMean": -0.110982,
+      "topQuintileWR": 0.3022,
+      "botQuintileWR": 0.385
+    },
+    {
+      "feature": "volPrice",
+      "direction": "높을수록↑",
+      "cohensD": 0.1024,
+      "tStat": 29,
+      "winMean": 6627165540.108066,
+      "lossMean": 3732229141.72437,
+      "topQuintileWR": 0.4725,
+      "botQuintileWR": 0.2564
+    },
+    {
+      "feature": "ma60Dist",
+      "direction": "높을수록↑",
+      "cohensD": 0.0967,
+      "tStat": 28.34,
+      "winMean": 0.026659,
+      "lossMean": 0.010455,
+      "topQuintileWR": 0.402,
+      "botQuintileWR": 0.3494
+    },
+    {
+      "feature": "upperWick",
+      "direction": "높을수록↑",
+      "cohensD": 0.0883,
+      "tStat": 26.32,
+      "winMean": 0.291591,
+      "lossMean": 0.270613,
+      "topQuintileWR": 0.3556,
+      "botQuintileWR": 0.309
+    },
+    {
+      "feature": "ret20d",
+      "direction": "높을수록↑",
+      "cohensD": 0.0723,
+      "tStat": 21.2,
+      "winMean": 0.029246,
+      "lossMean": 0.015142,
+      "topQuintileWR": 0.4003,
+      "botQuintileWR": 0.3619
+    },
+    {
+      "feature": "bodyRatio",
+      "direction": "낮을수록↓",
+      "cohensD": -0.0717,
+      "tStat": -21.35,
+      "winMean": -0.100468,
+      "lossMean": -0.064158,
+      "topQuintileWR": 0.3321,
+      "botQuintileWR": 0.3815
+    },
+    {
+      "feature": "ma5_20cross",
+      "direction": "높을수록↑",
+      "cohensD": 0.0487,
+      "tStat": 14.3,
+      "winMean": 0.005212,
+      "lossMean": 0.001718,
+      "topQuintileWR": 0.3901,
+      "botQuintileWR": 0.3652
+    },
+    {
+      "feature": "changeRate",
+      "direction": "낮을수록↓",
+      "cohensD": -0.0408,
+      "tStat": -11.83,
+      "winMean": -0.00071,
+      "lossMean": 0.000766,
+      "topQuintileWR": 0.3796,
+      "botQuintileWR": 0.3994
+    },
+    {
+      "feature": "ma20Dist",
+      "direction": "높을수록↑",
+      "cohensD": 0.0391,
+      "tStat": 11.42,
+      "winMean": 0.006291,
+      "lossMean": 0.002689,
+      "topQuintileWR": 0.3935,
+      "botQuintileWR": 0.3741
+    },
+    {
+      "feature": "ret10d",
+      "direction": "높을수록↑",
+      "cohensD": 0.0388,
+      "tStat": 11.34,
+      "winMean": 0.011751,
+      "lossMean": 0.006803,
+      "topQuintileWR": 0.3922,
+      "botQuintileWR": 0.3772
+    },
+    {
+      "feature": "prevUpperWick",
+      "direction": "높을수록↑",
+      "cohensD": 0.0371,
+      "tStat": 11.1,
+      "winMean": 0.282524,
+      "lossMean": 0.273743,
+      "topQuintileWR": 0.3358,
+      "botQuintileWR": 0.3146
+    },
+    {
+      "feature": "consecDown",
+      "direction": "높을수록↑",
+      "cohensD": 0.0267,
+      "tStat": 7.96,
+      "winMean": 1.02559,
+      "lossMean": 0.988461,
+      "topQuintileWR": 0.2219,
+      "botQuintileWR": 0.8268
+    },
+    {
+      "feature": "rsi14",
+      "direction": "높을수록↑",
+      "cohensD": 0.0189,
+      "tStat": 5.65,
+      "winMean": 48.651341,
+      "lossMean": 48.329306,
+      "topQuintileWR": 0.3519,
+      "botQuintileWR": 0.3371
+    },
+    {
+      "feature": "ret3d",
+      "direction": "높을수록↑",
+      "cohensD": 0.0181,
+      "tStat": 5.26,
+      "winMean": 0.003008,
+      "lossMean": 0.001824,
+      "topQuintileWR": 0.3894,
+      "botQuintileWR": 0.3794
+    },
+    {
+      "feature": "gapUp",
+      "direction": "높을수록↑",
+      "cohensD": 0.0152,
+      "tStat": 4.41,
+      "winMean": 0.002347,
+      "lossMean": 0.002071,
+      "topQuintileWR": 0.4107,
+      "botQuintileWR": 0.3698
+    },
+    {
+      "feature": "consecUp",
+      "direction": "높을수록↑",
+      "cohensD": 0.015,
+      "tStat": 4.47,
+      "winMean": 0.809238,
+      "lossMean": 0.791173,
+      "topQuintileWR": 0.3364,
+      "botQuintileWR": 0.9384
+    },
+    {
+      "feature": "ma10Dist",
+      "direction": "높을수록↑",
+      "cohensD": 0.0147,
+      "tStat": 4.29,
+      "winMean": 0.002062,
+      "lossMean": 0.001149,
+      "topQuintileWR": 0.3914,
+      "botQuintileWR": 0.385
+    },
+    {
+      "feature": "ret5d",
+      "direction": "높을수록↑",
+      "cohensD": 0.0146,
+      "tStat": 4.26,
+      "winMean": 0.005149,
+      "lossMean": 0.003882,
+      "topQuintileWR": 0.3857,
+      "botQuintileWR": 0.3857
+    },
+    {
+      "feature": "volRatio10",
+      "direction": "높을수록↑",
+      "cohensD": 0.007,
+      "tStat": 1.83,
+      "winMean": 1.812301,
+      "lossMean": 1.402966,
+      "topQuintileWR": 0.3713,
+      "botQuintileWR": 0.3166
+    },
+    {
+      "feature": "volRatio5",
+      "direction": "높을수록↑",
+      "cohensD": 0.006,
+      "tStat": 1.57,
+      "winMean": 1.967678,
+      "lossMean": 1.477327,
+      "topQuintileWR": 0.3687,
+      "botQuintileWR": 0.3156
+    },
+    {
+      "feature": "volRatio20",
+      "direction": "높을수록↑",
+      "cohensD": 0.0057,
+      "tStat": 1.48,
+      "winMean": 1.974298,
+      "lossMean": 1.340575,
+      "topQuintileWR": 0.3736,
+      "botQuintileWR": 0.3162
+    },
+    {
+      "feature": "prevChange",
+      "direction": "높을수록↑",
+      "cohensD": 0.0051,
+      "tStat": 1.51,
+      "winMean": 0.001121,
+      "lossMean": 0.000922,
+      "topQuintileWR": 0.3691,
+      "botQuintileWR": 0.3758
+    },
+    {
+      "feature": "ma5Dist",
+      "direction": "낮을수록↓",
+      "cohensD": -0.0047,
+      "tStat": -1.36,
+      "winMean": 0.000197,
+      "lossMean": 0.000383,
+      "topQuintileWR": 0.3901,
+      "botQuintileWR": 0.388
+    }
+  ]
+}

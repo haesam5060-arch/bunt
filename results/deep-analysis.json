@@ -1,0 +1,331 @@
+{
+  "period": {
+    "from": "2025-03-17",
+    "to": "2026-03-17"
+  },
+  "ic": [
+    {
+      "feature": "volPrice",
+      "meanIC": 0.141,
+      "icIR": 0.57,
+      "hitRate": 0.8
+    },
+    {
+      "feature": "logVolPrice",
+      "meanIC": 0.141,
+      "icIR": 0.57,
+      "hitRate": 0.8
+    },
+    {
+      "feature": "absChangeRate",
+      "meanIC": 0.1319,
+      "icIR": 1.04,
+      "hitRate": 0.88
+    },
+    {
+      "feature": "atrPct",
+      "meanIC": 0.1284,
+      "icIR": 0.81,
+      "hitRate": 0.84
+    },
+    {
+      "feature": "rangePct",
+      "meanIC": 0.1236,
+      "icIR": 0.96,
+      "hitRate": 0.87
+    },
+    {
+      "feature": "upperWick",
+      "meanIC": 0.1205,
+      "icIR": 1.91,
+      "hitRate": 0.96
+    },
+    {
+      "feature": "gapUp",
+      "meanIC": 0.1197,
+      "icIR": 0.73,
+      "hitRate": 0.84
+    },
+    {
+      "feature": "volRatio5",
+      "meanIC": 0.1072,
+      "icIR": 1.65,
+      "hitRate": 0.95
+    },
+    {
+      "feature": "volRatio20",
+      "meanIC": 0.1037,
+      "icIR": 1.42,
+      "hitRate": 0.93
+    },
+    {
+      "feature": "volSpike1_5",
+      "meanIC": 0.1028,
+      "icIR": 1.63,
+      "hitRate": 0.93
+    },
+    {
+      "feature": "strongUp5pct",
+      "meanIC": 0.0963,
+      "icIR": 1.13,
+      "hitRate": 0.89
+    },
+    {
+      "feature": "isLimitUp",
+      "meanIC": 0.0944,
+      "icIR": 1.22,
+      "hitRate": 0.89
+    },
+    {
+      "feature": "isPositive",
+      "meanIC": 0.0881,
+      "icIR": 1.22,
+      "hitRate": 0.89
+    },
+    {
+      "feature": "consecUp",
+      "meanIC": 0.0866,
+      "icIR": 1.22,
+      "hitRate": 0.91
+    },
+    {
+      "feature": "lowDist20",
+      "meanIC": 0.0788,
+      "icIR": 0.58,
+      "hitRate": 0.79
+    },
+    {
+      "feature": "ma60Dist",
+      "meanIC": 0.0774,
+      "icIR": 0.57,
+      "hitRate": 0.81
+    },
+    {
+      "feature": "ma5Above20",
+      "meanIC": 0.077,
+      "icIR": 0.77,
+      "hitRate": 0.86
+    },
+    {
+      "feature": "rsi14",
+      "meanIC": 0.0628,
+      "icIR": 0.54,
+      "hitRate": 0.75
+    },
+    {
+      "feature": "ret3d",
+      "meanIC": 0.0594,
+      "icIR": 0.48,
+      "hitRate": 0.75
+    },
+    {
+      "feature": "changeRate",
+      "meanIC": 0.0576,
+      "icIR": 0.42,
+      "hitRate": 0.75
+    },
+    {
+      "feature": "ma5Dist",
+      "meanIC": 0.0557,
+      "icIR": 0.43,
+      "hitRate": 0.73
+    },
+    {
+      "feature": "ma20Dist",
+      "meanIC": 0.0545,
+      "icIR": 0.43,
+      "hitRate": 0.73
+    },
+    {
+      "feature": "ret5d",
+      "meanIC": 0.0509,
+      "icIR": 0.41,
+      "hitRate": 0.7
+    },
+    {
+      "feature": "highDist20",
+      "meanIC": 0.0382,
+      "icIR": 0.33,
+      "hitRate": 0.68
+    },
+    {
+      "feature": "bodyRatio",
+      "meanIC": 0.0382,
+      "icIR": 0.42,
+      "hitRate": 0.66
+    },
+    {
+      "feature": "closeEqHigh",
+      "meanIC": 0.0269,
+      "icIR": 0.4,
+      "hitRate": 0.68
+    },
+    {
+      "feature": "closeVsHigh",
+      "meanIC": -0.0057,
+      "icIR": -0.05,
+      "hitRate": 0.45
+    },
+    {
+      "feature": "lowerWick",
+      "meanIC": -0.0052,
+      "icIR": -0.08,
+      "hitRate": 0.51
+    }
+  ],
+  "strategies": [
+    {
+      "label": "상한가만",
+      "capital": 147379707435534,
+      "avgDaily": 0.078954,
+      "winRate": 0.7882,
+      "maxDD": 0.2014,
+      "tradeDays": 230,
+      "totalTrades": 1199
+    },
+    {
+      "label": "기본: 등락률 5%+",
+      "capital": 52483626584,
+      "avgDaily": 0.039401,
+      "winRate": 0.5951,
+      "maxDD": 0.1652,
+      "tradeDays": 244,
+      "totalTrades": 2440
+    },
+    {
+      "label": "사장님 원래 필터 (거래량1.5x+등락5%+종가=고가+거래대금5억+)",
+      "capital": 7950054074,
+      "avgDaily": 0.031301,
+      "winRate": 0.5731,
+      "maxDD": 0.1589,
+      "tradeDays": 243,
+      "totalTrades": 2354
+    },
+    {
+      "label": "등락5%+ & MA60 위 & 거래량1.5x+",
+      "capital": 3396069861,
+      "avgDaily": 0.027569,
+      "winRate": 0.5584,
+      "maxDD": 0.1523,
+      "tradeDays": 244,
+      "totalTrades": 2439
+    },
+    {
+      "label": "등락5%+ & 종가=고가 & 거래대금50억+",
+      "capital": 1579635367,
+      "avgDaily": 0.024488,
+      "winRate": 0.5738,
+      "maxDD": 0.1532,
+      "tradeDays": 243,
+      "totalTrades": 2257
+    },
+    {
+      "label": "거래대금 50억+ & 등락3%+",
+      "capital": 1158116680,
+      "avgDaily": 0.023017,
+      "winRate": 0.5467,
+      "maxDD": 0.1282,
+      "tradeDays": 244,
+      "totalTrades": 2440
+    },
+    {
+      "label": "등락률 7%+ & 갭업1%+ & 거래대금20억+",
+      "capital": 1062013433,
+      "avgDaily": 0.022725,
+      "winRate": 0.5325,
+      "maxDD": 0.1751,
+      "tradeDays": 244,
+      "totalTrades": 2338
+    },
+    {
+      "label": "등락5%+ & 20일신고가 근접(-5%이내) & 거래대금50억+",
+      "capital": 692244742,
+      "avgDaily": 0.020847,
+      "winRate": 0.5389,
+      "maxDD": 0.1467,
+      "tradeDays": 244,
+      "totalTrades": 2338
+    },
+    {
+      "label": "등락5%+ & RSI>60 & 거래대금50억+",
+      "capital": 624153021,
+      "avgDaily": 0.020415,
+      "winRate": 0.5291,
+      "maxDD": 0.1411,
+      "tradeDays": 244,
+      "totalTrades": 2436
+    },
+    {
+      "label": "등락5%+ & 아래꼬리 없음 & 거래대금50억+",
+      "capital": 391668364,
+      "avgDaily": 0.018329,
+      "winRate": 0.5248,
+      "maxDD": 0.0659,
+      "tradeDays": 244,
+      "totalTrades": 2416
+    },
+    {
+      "label": "거래대금 100억+ & 등락5%+ & 상한가 포함",
+      "capital": 296094840,
+      "avgDaily": 0.017272,
+      "winRate": 0.5193,
+      "maxDD": 0.1263,
+      "tradeDays": 244,
+      "totalTrades": 2440
+    },
+    {
+      "label": "거래대금 100억+ & 등락5%+",
+      "capital": 291833720,
+      "avgDaily": 0.017216,
+      "winRate": 0.5191,
+      "maxDD": 0.1263,
+      "tradeDays": 244,
+      "totalTrades": 2439
+    },
+    {
+      "label": "등락5%+ & 연속상승2일+ & 거래대금50억+",
+      "capital": 156817192,
+      "avgDaily": 0.014536,
+      "winRate": 0.4923,
+      "maxDD": 0.1179,
+      "tradeDays": 244,
+      "totalTrades": 2407
+    },
+    {
+      "label": "등락률 3~10% & 거래대금20억+ & MA5위",
+      "capital": 10666064,
+      "avgDaily": 0.003207,
+      "winRate": 0.4357,
+      "maxDD": 0.1277,
+      "tradeDays": 244,
+      "totalTrades": 2433
+    },
+    {
+      "label": "등락10%~29%",
+      "capital": 8930405,
+      "avgDaily": 0.002553,
+      "winRate": 0.4205,
+      "maxDD": 0.1255,
+      "tradeDays": 244,
+      "totalTrades": 2397
+    },
+    {
+      "label": "등락5%+ & 종가≠고가(고가에서 밀림) & 거래대금50억+",
+      "capital": 7555256,
+      "avgDaily": 0.001827,
+      "winRate": 0.4258,
+      "maxDD": 0.1232,
+      "tradeDays": 244,
+      "totalTrades": 2433
+    },
+    {
+      "label": "음봉 + 거래폭발 + 거래대금50억+ (역발상)",
+      "capital": 4028484,
+      "avgDaily": -0.000932,
+      "winRate": 0.4735,
+      "maxDD": 0.4232,
+      "tradeDays": 191,
+      "totalTrades": 773
+    }
+  ]
+}

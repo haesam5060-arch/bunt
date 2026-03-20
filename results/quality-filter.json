@@ -1,0 +1,426 @@
+{
+  "byPerTrade": [
+    {
+      "name": "등락≥20% + 종가=고가",
+      "avgPerTrade": 0.006124,
+      "avgDaily": 0.034844,
+      "winRate": 0.75,
+      "maxDD": 0.11,
+      "capital": 13090930590,
+      "tradeDays": 232,
+      "avgStocks": 5.7,
+      "skipDays": 12
+    },
+    {
+      "name": "등락≥15% + 종가=고가 + 갭업≥0%",
+      "avgPerTrade": 0.005523,
+      "avgDaily": 0.032057,
+      "winRate": 0.7155,
+      "maxDD": 0.11,
+      "capital": 7585114385,
+      "tradeDays": 235,
+      "avgStocks": 5.8,
+      "skipDays": 9
+    },
+    {
+      "name": "등락≥20% + 아꼬≤10%",
+      "avgPerTrade": 0.004827,
+      "avgDaily": 0.027501,
+      "winRate": 0.6672,
+      "maxDD": 0.1118,
+      "capital": 2434369864,
+      "tradeDays": 231,
+      "avgStocks": 5.7,
+      "skipDays": 13
+    },
+    {
+      "name": "등락≥20% + 아꼬≤15%",
+      "avgPerTrade": 0.004199,
+      "avgDaily": 0.025708,
+      "winRate": 0.6706,
+      "maxDD": 0.1075,
+      "capital": 1863317582,
+      "tradeDays": 236,
+      "avgStocks": 6.1,
+      "skipDays": 8
+    },
+    {
+      "name": "종가=고가 + 아꼬≤5% + 거래량≥2x",
+      "avgPerTrade": 0.003813,
+      "avgDaily": 0.018765,
+      "winRate": 0.5874,
+      "maxDD": 0.0799,
+      "capital": 336276141,
+      "tradeDays": 229,
+      "avgStocks": 4.9,
+      "skipDays": 15
+    },
+    {
+      "name": "등락≥20%",
+      "avgPerTrade": 0.003783,
+      "avgDaily": 0.026116,
+      "winRate": 0.6735,
+      "maxDD": 0.1251,
+      "capital": 2263896745,
+      "tradeDays": 240,
+      "avgStocks": 6.9,
+      "skipDays": 4
+    },
+    {
+      "name": "등락≥10% + 종가=고가 + 갭업≥0%",
+      "avgPerTrade": 0.003232,
+      "avgDaily": 0.024866,
+      "winRate": 0.6351,
+      "maxDD": 0.0982,
+      "capital": 1652987300,
+      "tradeDays": 239,
+      "avgStocks": 7.7,
+      "skipDays": 5
+    },
+    {
+      "name": "아꼬≤5% + 갭업≥1% + 거래대금≥10억",
+      "avgPerTrade": 0.003121,
+      "avgDaily": 0.015873,
+      "winRate": 0.5566,
+      "maxDD": 0.1086,
+      "capital": 146077981,
+      "tradeDays": 219,
+      "avgStocks": 5.1,
+      "skipDays": 25
+    },
+    {
+      "name": "등락≥10% + 종가=고가 + 갭업≥0% + 거래량≥2x",
+      "avgPerTrade": 0.003094,
+      "avgDaily": 0.020586,
+      "winRate": 0.6164,
+      "maxDD": 0.1086,
+      "capital": 585159359,
+      "tradeDays": 237,
+      "avgStocks": 6.7,
+      "skipDays": 7
+    },
+    {
+      "name": "등락≥10% + 종가=고가",
+      "avgPerTrade": 0.002883,
+      "avgDaily": 0.024138,
+      "winRate": 0.6363,
+      "maxDD": 0.092,
+      "capital": 1481234605,
+      "tradeDays": 241,
+      "avgStocks": 8.4,
+      "skipDays": 3
+    },
+    {
+      "name": "등락≥15% + 아꼬≤10% + 갭업≥0% + 거래량≥1.5x",
+      "avgPerTrade": 0.002528,
+      "avgDaily": 0.016786,
+      "winRate": 0.5856,
+      "maxDD": 0.1404,
+      "capital": 226744552,
+      "tradeDays": 233,
+      "avgStocks": 6.6,
+      "skipDays": 11
+    },
+    {
+      "name": "종가=고가 + 갭업≥0%",
+      "avgPerTrade": 0.002375,
+      "avgDaily": 0.021051,
+      "winRate": 0.5927,
+      "maxDD": 0.0924,
+      "capital": 762108084,
+      "tradeDays": 244,
+      "avgStocks": 8.9,
+      "skipDays": 0
+    },
+    {
+      "name": "종가=고가 + 갭업≥0% + 거래대금≥20억",
+      "avgPerTrade": 0.002328,
+      "avgDaily": 0.018501,
+      "winRate": 0.6044,
+      "maxDD": 0.0786,
+      "capital": 404830292,
+      "tradeDays": 243,
+      "avgStocks": 7.9,
+      "skipDays": 1
+    },
+    {
+      "name": "등락≥15%",
+      "avgPerTrade": 0.002265,
+      "avgDaily": 0.020215,
+      "winRate": 0.6152,
+      "maxDD": 0.1364,
+      "capital": 618217997,
+      "tradeDays": 244,
+      "avgStocks": 8.9,
+      "skipDays": 0
+    },
+    {
+      "name": "아꼬≤15% + 종가=고가",
+      "avgPerTrade": 0.002255,
+      "avgDaily": 0.019155,
+      "winRate": 0.5827,
+      "maxDD": 0.0702,
+      "capital": 489591471,
+      "tradeDays": 244,
+      "avgStocks": 8.5,
+      "skipDays": 0
+    },
+    {
+      "name": "등락≥15% + 아꼬≤10% + 거래대금≥10억",
+      "avgPerTrade": 0.002254,
+      "avgDaily": 0.017203,
+      "winRate": 0.5939,
+      "maxDD": 0.0837,
+      "capital": 283128346,
+      "tradeDays": 240,
+      "avgStocks": 7.6,
+      "skipDays": 4
+    },
+    {
+      "name": "등락≥15% + 아꼬≤15%",
+      "avgPerTrade": 0.002241,
+      "avgDaily": 0.018445,
+      "winRate": 0.6041,
+      "maxDD": 0.1119,
+      "capital": 408241603,
+      "tradeDays": 244,
+      "avgStocks": 8.2,
+      "skipDays": 0
+    },
+    {
+      "name": "종가=고가(98%+)",
+      "avgPerTrade": 0.002208,
+      "avgDaily": 0.021363,
+      "winRate": 0.5951,
+      "maxDD": 0.0924,
+      "capital": 825539626,
+      "tradeDays": 244,
+      "avgStocks": 9.7,
+      "skipDays": 0
+    },
+    {
+      "name": "등락≥10% + 아꼬≤5% + 갭업≥0%",
+      "avgPerTrade": 0.002168,
+      "avgDaily": 0.017291,
+      "winRate": 0.5506,
+      "maxDD": 0.0714,
+      "capital": 280078365,
+      "tradeDays": 238,
+      "avgStocks": 8,
+      "skipDays": 6
+    },
+    {
+      "name": "아꼬=0%(꼬리없음)",
+      "avgPerTrade": 0.002082,
+      "avgDaily": 0.014757,
+      "winRate": 0.5029,
+      "maxDD": 0.0829,
+      "capital": 167612466,
+      "tradeDays": 243,
+      "avgStocks": 7.1,
+      "skipDays": 1
+    }
+  ],
+  "byDaily": [
+    {
+      "name": "등락≥20% + 종가=고가",
+      "avgPerTrade": 0.006124,
+      "avgDaily": 0.034844,
+      "winRate": 0.75,
+      "maxDD": 0.11,
+      "capital": 13090930590,
+      "tradeDays": 232,
+      "avgStocks": 5.7
+    },
+    {
+      "name": "등락≥15% + 종가=고가 + 갭업≥0%",
+      "avgPerTrade": 0.005523,
+      "avgDaily": 0.032057,
+      "winRate": 0.7155,
+      "maxDD": 0.11,
+      "capital": 7585114385,
+      "tradeDays": 235,
+      "avgStocks": 5.8
+    },
+    {
+      "name": "등락≥20% + 아꼬≤10%",
+      "avgPerTrade": 0.004827,
+      "avgDaily": 0.027501,
+      "winRate": 0.6672,
+      "maxDD": 0.1118,
+      "capital": 2434369864,
+      "tradeDays": 231,
+      "avgStocks": 5.7
+    },
+    {
+      "name": "등락≥20%",
+      "avgPerTrade": 0.003783,
+      "avgDaily": 0.026116,
+      "winRate": 0.6735,
+      "maxDD": 0.1251,
+      "capital": 2263896745,
+      "tradeDays": 240,
+      "avgStocks": 6.9
+    },
+    {
+      "name": "등락≥20% + 아꼬≤15%",
+      "avgPerTrade": 0.004199,
+      "avgDaily": 0.025708,
+      "winRate": 0.6706,
+      "maxDD": 0.1075,
+      "capital": 1863317582,
+      "tradeDays": 236,
+      "avgStocks": 6.1
+    },
+    {
+      "name": "등락≥10% + 종가=고가 + 갭업≥0%",
+      "avgPerTrade": 0.003232,
+      "avgDaily": 0.024866,
+      "winRate": 0.6351,
+      "maxDD": 0.0982,
+      "capital": 1652987300,
+      "tradeDays": 239,
+      "avgStocks": 7.7
+    },
+    {
+      "name": "등락≥10% + 종가=고가",
+      "avgPerTrade": 0.002883,
+      "avgDaily": 0.024138,
+      "winRate": 0.6363,
+      "maxDD": 0.092,
+      "capital": 1481234605,
+      "tradeDays": 241,
+      "avgStocks": 8.4
+    },
+    {
+      "name": "종가=고가(98%+)",
+      "avgPerTrade": 0.002208,
+      "avgDaily": 0.021363,
+      "winRate": 0.5951,
+      "maxDD": 0.0924,
+      "capital": 825539626,
+      "tradeDays": 244,
+      "avgStocks": 9.7
+    },
+    {
+      "name": "종가=고가 + 갭업≥0%",
+      "avgPerTrade": 0.002375,
+      "avgDaily": 0.021051,
+      "winRate": 0.5927,
+      "maxDD": 0.0924,
+      "capital": 762108084,
+      "tradeDays": 244,
+      "avgStocks": 8.9
+    },
+    {
+      "name": "등락≥10% + 종가=고가 + 갭업≥0% + 거래량≥2x",
+      "avgPerTrade": 0.003094,
+      "avgDaily": 0.020586,
+      "winRate": 0.6164,
+      "maxDD": 0.1086,
+      "capital": 585159359,
+      "tradeDays": 237,
+      "avgStocks": 6.7
+    },
+    {
+      "name": "종가=고가(95%+)",
+      "avgPerTrade": 0.002051,
+      "avgDaily": 0.020513,
+      "winRate": 0.5939,
+      "maxDD": 0.0931,
+      "capital": 670955905,
+      "tradeDays": 244,
+      "avgStocks": 10
+    },
+    {
+      "name": "등락≥15%",
+      "avgPerTrade": 0.002265,
+      "avgDaily": 0.020215,
+      "winRate": 0.6152,
+      "maxDD": 0.1364,
+      "capital": 618217997,
+      "tradeDays": 244,
+      "avgStocks": 8.9
+    },
+    {
+      "name": "등락≥10%",
+      "avgPerTrade": 0.001945,
+      "avgDaily": 0.01935,
+      "winRate": 0.5918,
+      "maxDD": 0.122,
+      "capital": 506310989,
+      "tradeDays": 244,
+      "avgStocks": 10
+    },
+    {
+      "name": "기준선: TOP 10 (필터없음)",
+      "avgPerTrade": 0.001931,
+      "avgDaily": 0.019306,
+      "winRate": 0.5918,
+      "maxDD": 0.122,
+      "capital": 501065167,
+      "tradeDays": 244,
+      "avgStocks": 10
+    },
+    {
+      "name": "등락≥5%",
+      "avgPerTrade": 0.001931,
+      "avgDaily": 0.019306,
+      "winRate": 0.5918,
+      "maxDD": 0.122,
+      "capital": 501065167,
+      "tradeDays": 244,
+      "avgStocks": 10
+    },
+    {
+      "name": "아꼬≤15% + 종가=고가",
+      "avgPerTrade": 0.002255,
+      "avgDaily": 0.019155,
+      "winRate": 0.5827,
+      "maxDD": 0.0702,
+      "capital": 489591471,
+      "tradeDays": 244,
+      "avgStocks": 8.5
+    },
+    {
+      "name": "종가=고가 + 아꼬≤5% + 거래량≥2x",
+      "avgPerTrade": 0.003813,
+      "avgDaily": 0.018765,
+      "winRate": 0.5874,
+      "maxDD": 0.0799,
+      "capital": 336276141,
+      "tradeDays": 229,
+      "avgStocks": 4.9
+    },
+    {
+      "name": "종가=고가 + 갭업≥0% + 거래대금≥20억",
+      "avgPerTrade": 0.002328,
+      "avgDaily": 0.018501,
+      "winRate": 0.6044,
+      "maxDD": 0.0786,
+      "capital": 404830292,
+      "tradeDays": 243,
+      "avgStocks": 7.9
+    },
+    {
+      "name": "등락≥15% + 아꼬≤15%",
+      "avgPerTrade": 0.002241,
+      "avgDaily": 0.018445,
+      "winRate": 0.6041,
+      "maxDD": 0.1119,
+      "capital": 408241603,
+      "tradeDays": 244,
+      "avgStocks": 8.2
+    },
+    {
+      "name": "거래대금≥5억",
+      "avgPerTrade": 0.001841,
+      "avgDaily": 0.018413,
+      "winRate": 0.5877,
+      "maxDD": 0.122,
+      "capital": 405111736,
+      "tradeDays": 244,
+      "avgStocks": 10
+    }
+  ]
+}
