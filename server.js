@@ -202,7 +202,7 @@ async function executeBuyPipeline(mode = 'paper') {
       appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
     } else {
       try {
-        const result = await orderBuy(token, config.appKey, config.appSecret, config.cano, { code: stock.code, qty, price: stock.close, orderType: 'limit' }, mode);
+        const result = await orderBuy(token, config.appKey, config.appSecret, config.cano, { code: stock.code, qty, price: stock.close, orderType: 'market' }, mode);
         log(`${modeTag} ✅ 매수: ${stock.name}(${stock.code}) ${qty}주 × ${stock.close.toLocaleString()}원 = ${(qty * stock.close).toLocaleString()}원`);
         buyResults.push({ ...stock, qty, ordNo: result.ordNo });
         appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
