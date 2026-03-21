@@ -1,0 +1,64 @@
+{
+  "period": {
+    "from": "2025-03-20",
+    "to": "2026-03-20"
+  },
+  "scenarios": [
+    {
+      "label": "A: -5% 이하",
+      "trades": 2429,
+      "wins": 679,
+      "losses": 1750,
+      "winRate": 0.2795,
+      "avgNetReturn": -0.011139,
+      "avgGrossReturn": 0.000661,
+      "medianReturn": -0.0118,
+      "finalCapital": 30664,
+      "totalReturn": -0.9387,
+      "maxDD": 0.9407,
+      "signalDays": 243
+    },
+    {
+      "label": "B: -10% 이하",
+      "trades": 1712,
+      "wins": 518,
+      "losses": 1194,
+      "winRate": 0.3026,
+      "avgNetReturn": -0.01174,
+      "avgGrossReturn": 0.00006,
+      "medianReturn": -0.0118,
+      "finalCapital": 25542,
+      "totalReturn": -0.9489,
+      "maxDD": 0.9506,
+      "signalDays": 240
+    },
+    {
+      "label": "C: -15% 이하",
+      "trades": 666,
+      "wins": 204,
+      "losses": 462,
+      "winRate": 0.3063,
+      "avgNetReturn": -0.014653,
+      "avgGrossReturn": -0.002853,
+      "medianReturn": -0.0118,
+      "finalCapital": 12477,
+      "totalReturn": -0.975,
+      "maxDD": 0.9753,
+      "signalDays": 200
+    },
+    {
+      "label": "D: -20% 이하",
+      "trades": 228,
+      "wins": 68,
+      "losses": 160,
+      "winRate": 0.2982,
+      "avgNetReturn": -0.021085,
+      "avgGrossReturn": -0.009285,
+      "medianReturn": -0.0118,
+      "finalCapital": -624,
+      "totalReturn": -1.0012,
+      "maxDD": 1.0038,
+      "signalDays": 123
+    }
+  ]
+}

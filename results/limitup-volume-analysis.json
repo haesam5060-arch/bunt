@@ -1,0 +1,21 @@
+{
+  "period": {
+    "from": "2025-03-20",
+    "to": "2026-03-20"
+  },
+  "totalSignals": 1533,
+  "limitUpCount": 1507,
+  "nonLimitCount": 26,
+  "limitUpTradingValueDistribution": {
+    "p10": 1496313300,
+    "p25": 4199926230,
+    "p50": 14887992932,
+    "p75": 52624449172,
+    "p90": 125906983555
+  },
+  "bigLimitUps": {
+    "count": 1404,
+    "ev": 0.045082,
+    "winRate": 0.7536
+  }
+}
