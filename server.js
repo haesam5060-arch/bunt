@@ -237,11 +237,29 @@ function calcNetPnl(buyPrice, sellPrice, qty) {
   const sellCost = sellPrice * qty * COMMISSION_RATE;  // 매도 수수료
   const sellTax  = sellPrice * qty * SELL_TAX_RATE;    // 매도세
   const grossPnl = (sellPrice - buyPrice) * qty;
-  return { pnl: grossPnl - buyCost - sellCost - sellTax, pnlPct: buyPrice > 0 ? (sellPrice - buyPrice) / buyPrice - COMMISSION_RATE * 2 - SELL_TAX_RATE : 0 };
+  return { pnl: Math.round(grossPnl - buyCost - sellCost - sellTax), pnlPct: buyPrice > 0 ? (sellPrice - buyPrice) / buyPrice - COMMISSION_RATE * 2 - SELL_TAX_RATE : 0 };
 }
 
 // ── 핵심 로직: 익일 시가 매도 ────────────────────────────────
+const _sellLock = { paper: false, real: false };
+
 async function executeSellPipeline(mode = 'paper') {
+  const modeTag = mode === 'real' ? '[실전]' : '[모의]';
+
+  if (_sellLock[mode]) {
+    log(`${modeTag} 매도 이미 진행 중 — 중복 실행 방지`);
+    return;
+  }
+  _sellLock[mode] = true;
+
+  try {
+    await _executeSellPipelineInner(mode);
+  } finally {
+    _sellLock[mode] = false;
+  }
+}
+
+async function _executeSellPipelineInner(mode = 'paper') {
   const modeTag = mode === 'real' ? '[실전]' : '[모의]';
   const st = getState(mode);
 
@@ -477,8 +495,8 @@ function setupCron() {
     }
   }, { timezone: 'Asia/Seoul' });
 
-  // ─ 모의투자 매도 크론 (항상 동작) ─
-  cron.schedule(`${sellM} ${sellH} * * 1-5`, async () => {
+  // ─ 모의투자 매도 크론 (09:01 — 장 시작 후 시가 반영) ─
+  cron.schedule('1 9 * * 1-5', async () => {
     try {
       config = loadConfig();
       log('[모의] 매도 크론 시작');
@@ -543,7 +561,7 @@ function setupCron() {
     }
   }, { timezone: 'Asia/Seoul' });
 
-  log(`크론 등록: 매수 ${config.schedule.buyTime}, 매도 ${config.schedule.sellTime} (모의: 항상 ON, 실전: ${config.realAutoTrading ? 'ON' : 'OFF'})`);
+  log(`크론 등록: 매수 ${config.schedule.buyTime}, 매도 모의=09:01/실전=${config.schedule.sellTime} (모의: 항상 ON, 실전: ${config.realAutoTrading ? 'ON' : 'OFF'})`);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -590,6 +608,17 @@ app.get('/api/logs', (req, res) => {
 // 거래 내역 (뷰모드별)
 app.get('/api/trades', (req, res) => {
   const logs = loadTradeLog(config.viewMode || 'paper');
+  const date = req.query.date;
+  if (date) {
+    const filtered = logs.filter(t => t.timestamp && t.timestamp.startsWith(date.replace(/-/g, '-')));
+    // KST 기준으로 필터 (UTC+9)
+    const byDate = logs.filter(t => {
+      if (!t.timestamp) return false;
+      const kst = new Date(new Date(t.timestamp).getTime() + 9 * 3600000);
+      return kst.toISOString().slice(0, 10) === date;
+    });
+    return res.json(byDate);
+  }
   const limit = parseInt(req.query.limit) || 50;
   res.json(logs.slice(0, limit));
 });

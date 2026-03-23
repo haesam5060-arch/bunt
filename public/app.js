@@ -7,6 +7,63 @@ let refreshInterval = null;
 let countdown = 30;
 let currentMode = 'paper';       // 현재 뷰 모드
 let realAutoTrading = false;     // 실전 자동매매 상태
+let _openDetailDate = null;      // 현재 펼쳐진 일별 상세 날짜
+
+// ── 일별 매매 상세 토글 ──────────────────────────────────────
+async function toggleDailyDetail(row, date) {
+  const existing = row.nextElementSibling;
+  if (existing && existing.classList.contains('daily-detail-row')) {
+    existing.remove();
+    _openDetailDate = null;
+    return;
+  }
+  // 이미 열린 다른 상세 닫기
+  document.querySelectorAll('.daily-detail-row').forEach(el => el.remove());
+
+  const trades = await api(`/api/trades?date=${date}`);
+  if (!trades || trades.length === 0) {
+    return;
+  }
+
+  const buys = trades.filter(t => t.action === 'BUY');
+  const sells = trades.filter(t => t.action === 'SELL');
+
+  let html = '<td colspan="4"><div class="daily-detail">';
+
+  if (buys.length > 0) {
+    html += '<div class="detail-section"><div class="detail-title">매수</div><table class="detail-table"><tr><th>종목</th><th>매수가</th><th>수량</th><th>금액</th></tr>';
+    for (const b of buys) {
+      const amt = (b.buyPrice || b.price || 0) * (b.qty || 0);
+      html += `<tr><td>${b.name}</td><td>${(b.buyPrice || b.price || 0).toLocaleString()}</td><td>${b.qty}</td><td>${amt.toLocaleString()}원</td></tr>`;
+    }
+    html += '</table></div>';
+  }
+
+  if (sells.length > 0) {
+    html += '<div class="detail-section"><div class="detail-title">매도</div><table class="detail-table"><tr><th>종목</th><th>수량</th><th>매수가</th><th>매수금액</th><th>매도가</th><th>매도금액</th><th>수익률</th><th>손익</th></tr>';
+    let totalBuyAmt = 0, totalSellAmt = 0, totalPnl = 0;
+    for (const s of sells) {
+      const pnlClass = (s.pnl || 0) >= 0 ? 'pnl-pos' : 'pnl-neg';
+      const qty = s.qty || 0;
+      const buyAmt = (s.buyPrice || 0) * qty;
+      const sellAmt = (s.sellPrice || 0) * qty;
+      totalBuyAmt += buyAmt;
+      totalSellAmt += sellAmt;
+      totalPnl += (s.pnl || 0);
+      html += `<tr><td>${s.name}</td><td>${qty}</td><td>${(s.buyPrice || 0).toLocaleString()}</td><td>${buyAmt.toLocaleString()}원</td><td>${(s.sellPrice || 0).toLocaleString()}</td><td>${sellAmt.toLocaleString()}원</td><td class="${pnlClass}">${(s.pnlPct || 0) > 0 ? '+' : ''}${(s.pnlPct || 0).toFixed(2)}%</td><td class="${pnlClass}">${(s.pnl || 0) > 0 ? '+' : ''}${Math.round(s.pnl || 0).toLocaleString()}원</td></tr>`;
+    }
+    const totalPnlClass = totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+    html += `<tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td>${sells.reduce((s,t)=>s+(t.qty||0),0)}</td><td></td><td>${totalBuyAmt.toLocaleString()}원</td><td></td><td>${totalSellAmt.toLocaleString()}원</td><td></td><td class="${totalPnlClass}">${totalPnl > 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}원</td></tr>`;
+    html += '</table></div>';
+  }
+
+  html += '</div></td>';
+  const detailRow = document.createElement('tr');
+  detailRow.className = 'daily-detail-row';
+  detailRow.innerHTML = html;
+  row.after(detailRow);
+  _openDetailDate = date;
+}
 
 // ── API 호출 ─────────────────────────────────────────────────
 async function api(path, opts = {}) {
@@ -152,13 +209,18 @@ async function refreshStatus() {
     pnlBody.innerHTML = dailyPnl.map((p, i) => {
       const cum = cumPnls[i];
       return `
-      <tr>
+      <tr class="pnl-row" data-date="${p.date}" style="cursor:pointer;" onclick="toggleDailyDetail(this, '${p.date}')">
         <td>${p.date}</td>
         <td>${p.stocks}</td>
-        <td class="${p.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${p.pnl > 0 ? '+' : ''}${p.pnl.toLocaleString()}원</td>
-        <td class="${cum >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${cum > 0 ? '+' : ''}${cum.toLocaleString()}원</td>
+        <td class="${p.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${p.pnl > 0 ? '+' : ''}${Math.round(p.pnl).toLocaleString()}원</td>
+        <td class="${cum >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${cum > 0 ? '+' : ''}${Math.round(cum).toLocaleString()}원</td>
       </tr>`;
     }).join('');
+    // 펼쳐진 상세 복원
+    if (_openDetailDate) {
+      const openRow = pnlBody.querySelector(`tr[data-date="${_openDetailDate}"]`);
+      if (openRow) toggleDailyDetail(openRow, _openDetailDate);
+    }
   } else {
     pnlBody.innerHTML = '<tr><td colspan="4" class="empty-msg">아직 거래 내역 없음</td></tr>';
   }
@@ -362,16 +424,29 @@ function renderEquityCurve(statsData) {
 
   const seed = statsData.initialCapital;
   let cumPnl = 0;
-  const equityData = [];
-  const pnlBarData = [];
+  const equityData = [];  // 누적 수익률 (%)
+  const pnlBarData = [];  // 일별 손익 (만원)
 
   for (const p of dailyPnl) {
     cumPnl += p.pnl;
-    equityData.push({ time: p.date, value: seed + cumPnl });
+    equityData.push({ time: p.date, value: +(cumPnl / seed * 100).toFixed(2) });
     pnlBarData.push({
-      time: p.date, value: p.pnl,
+      time: p.date, value: +(p.pnl / 10000).toFixed(1),
       color: p.pnl >= 0 ? 'rgba(76,175,80,0.7)' : 'rgba(239,83,80,0.7)',
     });
+  }
+
+  // 시작점 추가 (시드 기준 0%)
+  if (dailyPnl.length > 0) {
+    const firstDate = dailyPnl[0].date;
+    const d = new Date(firstDate);
+    d.setDate(d.getDate() - 1);
+    const prevDate = d.toISOString().slice(0, 10);
+    // 주말 아닌 경우만 추가
+    if (prevDate < firstDate) {
+      equityData.unshift({ time: prevDate, value: 0 });
+      pnlBarData.unshift({ time: prevDate, value: 0, color: 'transparent' });
+    }
   }
 
   _equityChart = LightweightCharts.createChart(container, {
@@ -382,25 +457,30 @@ function renderEquityCurve(statsData) {
     rightPriceScale: { borderColor: '#252320' },
     leftPriceScale: { visible: true, borderColor: '#252320' },
     timeScale: { borderColor: '#252320', timeVisible: false },
+    localization: {
+      priceFormatter: (p) => p.toFixed(2) + '%',
+    },
   });
 
-  // 자산 추이 라인
+  // 누적 수익률 라인 (우측 축, %)
   const equitySeries = _equityChart.addLineSeries({
     color: '#4fc3f7', lineWidth: 2,
     priceLineVisible: false, lastValueVisible: true,
+    priceFormat: { type: 'custom', formatter: (p) => p.toFixed(2) + '%' },
   });
   equitySeries.setData(equityData);
 
-  // 시드 기준선
+  // 0% 기준선
   equitySeries.createPriceLine({
-    price: seed, color: '#555', lineWidth: 1, lineStyle: 2,
-    axisLabelVisible: true, title: '시드',
+    price: 0, color: '#555', lineWidth: 1, lineStyle: 2,
+    axisLabelVisible: true, title: '기준',
   });
 
-  // 일별 PnL 막대 (좌측 축)
+  // 일별 PnL 막대 (좌측 축, 만원)
   const barSeries = _equityChart.addHistogramSeries({
     priceScaleId: 'left',
     priceLineVisible: false, lastValueVisible: false,
+    priceFormat: { type: 'custom', formatter: (p) => p.toFixed(1) + '만' },
   });
   barSeries.setData(pnlBarData);
 
