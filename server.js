@@ -79,12 +79,20 @@ function kstNow() {
   return new Date(Date.now() + 9 * 3600000);
 }
 
+const LOG_DIR = path.join(__dirname, 'logs');
+if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+
 function log(msg, level = 'info') {
   const ts = kstNow().toISOString().slice(0, 19).replace('T', ' ');
   const line = `[${ts}] [${level.toUpperCase()}] ${msg}`;
   console.log(line);
   engineLog.unshift({ ts, level, msg });
-  if (engineLog.length > 100) engineLog = engineLog.slice(0, 100);
+  if (engineLog.length > 200) engineLog = engineLog.slice(0, 200);
+
+  // 파일 로그 (일별 로테이션)
+  const dateStr = kstNow().toISOString().slice(0, 10);
+  const logFile = path.join(LOG_DIR, `bunt-${dateStr}.log`);
+  try { fs.appendFileSync(logFile, line + '\n', 'utf8'); } catch {}
 }
 
 // ── KIS 토큰 관리 (모드별 분리) ──────────────────────────────
@@ -129,6 +137,46 @@ async function ensureToken(mode = 'paper') {
   return token;
 }
 
+// ── 매수 재시도 (DNS/네트워크 에러 대응) ──────────────────────
+async function executeBuyWithRetry(mode = 'paper', maxRetry = 3) {
+  const modeTag = mode === 'real' ? '[실전]' : '[모의]';
+  for (let attempt = 1; attempt <= maxRetry; attempt++) {
+    try {
+      await executeBuyPipeline(mode);
+      return; // 성공 시 종료
+    } catch (e) {
+      const isNetErr = /ENOTFOUND|ETIMEDOUT|ECONNRESET|ECONNREFUSED|EAI_AGAIN|socket hang up/i.test(e.message);
+      if (isNetErr && attempt < maxRetry) {
+        const wait = attempt * 10_000; // 10초, 20초, 30초
+        log(`${modeTag} ⚠️ 네트워크 에러 (${attempt}/${maxRetry}): ${e.message} — ${wait/1000}초 후 재시도`, 'warn');
+        await sleep(wait);
+      } else {
+        throw e; // 네트워크 에러가 아니거나 최대 재시도 초과
+      }
+    }
+  }
+}
+
+// ── 매도 재시도 (DNS/네트워크 에러 대응) ──────────────────────
+async function executeSellWithRetry(mode = 'paper', maxRetry = 3) {
+  const modeTag = mode === 'real' ? '[실전]' : '[모의]';
+  for (let attempt = 1; attempt <= maxRetry; attempt++) {
+    try {
+      await executeSellPipeline(mode);
+      return;
+    } catch (e) {
+      const isNetErr = /ENOTFOUND|ETIMEDOUT|ECONNRESET|ECONNREFUSED|EAI_AGAIN|socket hang up/i.test(e.message);
+      if (isNetErr && attempt < maxRetry) {
+        const wait = attempt * 10_000;
+        log(`${modeTag} ⚠️ 매도 네트워크 에러 (${attempt}/${maxRetry}): ${e.message} — ${wait/1000}초 후 재시도`, 'warn');
+        await sleep(wait);
+      } else {
+        throw e;
+      }
+    }
+  }
+}
+
 // ── 핵심 로직: 스캔 + 매수 ──────────────────────────────────
 async function executeBuyPipeline(mode = 'paper') {
   const modeTag = mode === 'real' ? '[실전]' : '[모의]';
@@ -155,6 +203,38 @@ async function executeBuyPipeline(mode = 'paper') {
     st.lastScan = new Date().toISOString();
     saveState(st, mode);
     return;
+  }
+
+  // 1-b. 연속 상한가 재진입 필터: 전일 매수한 종목은 제외
+  const yesterdayBuyCodes = new Set();
+  const tradeLog = loadTradeLog(mode);
+  const today = new Date().toISOString().slice(0, 10);
+  let prevDate = null;
+  for (const t of tradeLog) {
+    if (t.action !== 'BUY') continue;
+    const tDate = (t.timestamp || '').slice(0, 10);
+    if (tDate >= today) continue;
+    if (!prevDate) prevDate = tDate;
+    if (tDate === prevDate) {
+      yesterdayBuyCodes.add(t.code);
+    } else {
+      break;
+    }
+  }
+
+  if (yesterdayBuyCodes.size > 0) {
+    const before = scanResult.selected.length;
+    scanResult.selected = scanResult.selected.filter(s => !yesterdayBuyCodes.has(s.code));
+    const filtered = before - scanResult.selected.length;
+    if (filtered > 0) {
+      log(`${modeTag} 🔄 연속 상한가 재진입 필터: ${filtered}종목 제외 (전일 매수: ${[...yesterdayBuyCodes].join(',')})`);
+    }
+    if (scanResult.selected.length === 0) {
+      log(`${modeTag} 재진입 필터 후 종목 없음 — 매수 스킵`);
+      st.lastScan = new Date().toISOString();
+      saveState(st, mode);
+      return;
+    }
   }
 
   // 2. 잔고 확인
@@ -474,33 +554,42 @@ function setupCron() {
 
   // ─ 모의투자 매수 크론 (항상 동작) ─
   cron.schedule(`${buyM} ${buyH} * * 1-5`, async () => {
+    log('[모의] 매수 크론 트리거됨');
     try {
       config = loadConfig();
       log('[모의] 매수 크론 시작');
-      await executeBuyPipeline('paper');
+      await executeBuyWithRetry('paper', 3);
     } catch (e) {
       log(`[모의] 매수 크론 에러: ${e.message}`, 'error');
     }
   }, { timezone: 'Asia/Seoul' });
 
   // ─ 실전투자 매수 크론 (realAutoTrading일 때만) ─
-  cron.schedule(`${buyM} ${buyH} * * 1-5`, async () => {
+  // 모의와 시간을 1분 분리하여 동시 실행 충돌 방지
+  const realBuyM = String(Number(buyM) + 1).padStart(2, '0');
+  cron.schedule(`${realBuyM} ${buyH} * * 1-5`, async () => {
+    log('[실전] 매수 크론 트리거됨');
     try {
       config = loadConfig();
-      if (!config.realAutoTrading) return;
+      if (!config.realAutoTrading) {
+        log('[실전] 자동매매 OFF — 매수 스킵');
+        return;
+      }
       log('[실전] 매수 크론 시작');
-      await executeBuyPipeline('real');
+      await executeBuyWithRetry('real', 3);
     } catch (e) {
       log(`[실전] 매수 크론 에러: ${e.message}`, 'error');
+      emailService.sendError('[실전] 매수 크론 실패', e.message).catch(() => {});
     }
   }, { timezone: 'Asia/Seoul' });
 
   // ─ 모의투자 매도 크론 (09:01 — 장 시작 후 시가 반영) ─
   cron.schedule('1 9 * * 1-5', async () => {
+    log('[모의] 매도 크론 트리거됨');
     try {
       config = loadConfig();
       log('[모의] 매도 크론 시작');
-      await executeSellPipeline('paper');
+      await executeSellWithRetry('paper', 3);
       const st = getState('paper');
       if (st.positions && st.positions.length > 0) {
         log(`[모의] ⚠️ 잔여 ${st.positions.length}종목 — 리트라이 시작`, 'warn');
@@ -515,6 +604,7 @@ function setupCron() {
 
   // ─ 실전투자 매도 크론 (realAutoTrading일 때만) ─
   cron.schedule(`${sellM} ${sellH} * * 1-5`, async () => {
+    log('[실전] 매도 크론 트리거됨');
     try {
       config = loadConfig();
       if (!config.realAutoTrading) {
@@ -522,12 +612,14 @@ function setupCron() {
         const st = getState('real');
         if (st.positions && st.positions.length > 0) {
           log('[실전] 자동매매 OFF이지만 보유종목 존재 — 안전 매도 실행', 'warn');
-          await executeSellPipeline('real');
+          await executeSellWithRetry('real', 3);
+        } else {
+          log('[실전] 자동매매 OFF + 보유종목 없음 — 매도 스킵');
         }
         return;
       }
       log('[실전] 매도 크론 시작');
-      await executeSellPipeline('real');
+      await executeSellWithRetry('real', 3);
       const st = getState('real');
       if (st.positions && st.positions.length > 0) {
         log(`[실전] ⚠️ 잔여 ${st.positions.length}종목 — 리트라이 시작`, 'warn');
@@ -535,6 +627,7 @@ function setupCron() {
       }
     } catch (e) {
       log(`[실전] 매도 크론 에러: ${e.message}`, 'error');
+      emailService.sendError('[실전] 매도 크론 실패', e.message).catch(() => {});
       const st = getState('real');
       if (st.positions && st.positions.length > 0) startSellRetry('real');
     }
@@ -561,7 +654,8 @@ function setupCron() {
     }
   }, { timezone: 'Asia/Seoul' });
 
-  log(`크론 등록: 매수 ${config.schedule.buyTime}, 매도 모의=09:01/실전=${config.schedule.sellTime} (모의: 항상 ON, 실전: ${config.realAutoTrading ? 'ON' : 'OFF'})`);
+  log(`크론 등록: 모의매수 ${config.schedule.buyTime}, 실전매수 ${buyH}:${realBuyM}, 매도 모의=09:01/실전=${config.schedule.sellTime} (실전: ${config.realAutoTrading ? 'ON' : 'OFF'})`);
+  log(`크론 등록: 네트워크 에러 시 최대 3회 재시도 (10초 간격 증가)`);
 }
 
 // ═══════════════════════════════════════════════════════════════

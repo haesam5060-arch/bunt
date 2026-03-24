@@ -122,4 +122,14 @@ async function sendSellReport(results, dailyPnl, mode, presetLabel) {
   await send(`[BUNT${mode === 'real' ? ' 실전' : ''}] 매도 정산 ${dailyPnl > 0 ? '+' : ''}${dailyPnl.toLocaleString()}원`, html);
 }
 
-module.exports = { init, isReady, send, sendBuyReport, sendSellReport };
+async function sendError(title, detail) {
+  const html = `
+    <div style="font-family:monospace;padding:20px;background:#1a1a2e;color:#ff6b6b;">
+      <h2>🚨 ${title}</h2>
+      <pre style="color:#fff;background:#16213e;padding:15px;border-radius:8px;">${detail}</pre>
+      <p style="color:#888;">${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
+    </div>`;
+  await send(`[BUNT 🚨] ${title}`, html);
+}
+
+module.exports = { init, isReady, send, sendBuyReport, sendSellReport, sendError };
