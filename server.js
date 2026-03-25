@@ -107,9 +107,17 @@ const SELL_RETRY_INTERVAL = 60_000;
 
 function tokenFile(mode) { return path.join(__dirname, 'data', `token-${mode}.json`); }
 
-async function ensureToken(mode = 'paper') {
+async function ensureToken(mode = 'paper', forceRefresh = false) {
   const isReal = mode === 'real';
   let token = isReal ? kisTokenReal : kisTokenPaper;
+
+  // 강제 재발급: 실전 매수/매도 직전에 사용
+  if (forceRefresh) {
+    log(`[${isReal ? '실전' : '모의'}] 🔑 토큰 강제 재발급 (매매 직전 안전장치)`);
+    token = await getToken(config.appKey, config.appSecret, mode);
+    if (isReal) kisTokenReal = token; else kisTokenPaper = token;
+    return token;
+  }
 
   if (!token) {
     token = await getToken(config.appKey, config.appSecret, mode);
@@ -121,7 +129,8 @@ async function ensureToken(mode = 'paper') {
       // 기존 token.json 호환 + 모드별 분리
       const tPath = fs.existsSync(tf) ? tf : path.join(__dirname, 'data', 'token.json');
       const tokenData = JSON.parse(fs.readFileSync(tPath, 'utf8'));
-      if (!tokenData.expires || new Date(tokenData.expires) <= new Date()) {
+      const TOKEN_MARGIN_MS = 5 * 60 * 1000; // 만료 5분 전에 미리 재발급
+      if (!tokenData.expires || new Date(tokenData.expires) <= new Date(Date.now() + TOKEN_MARGIN_MS)) {
         log(`[${isReal ? '실전' : '모의'}] KIS 토큰 만료 감지 — 재발급`, 'warn');
         token = null;
         token = await getToken(config.appKey, config.appSecret, mode);
@@ -237,9 +246,9 @@ async function executeBuyPipeline(mode = 'paper') {
     }
   }
 
-  // 2. 잔고 확인
+  // 2. 잔고 확인 (실전: 매매 직전 토큰 강제 재발급)
   let availCash;
-  const token = await ensureToken(mode);
+  const token = await ensureToken(mode, mode === 'real');
   const seedCapital = mode === 'real' ? (config.realInitialCapital || 100000) : config.initialCapital;
 
   if (mode === 'paper') {
@@ -252,8 +261,22 @@ async function executeBuyPipeline(mode = 'paper') {
       balance = await getBalance(token, config.appKey, config.appSecret, config.cano, mode);
       log(`${modeTag} 예수금: ${balance.deposit.toLocaleString()}원`);
     } catch (e) {
-      log(`${modeTag} 잔고 조회 실패: ${e.message}`, 'error');
-      return;
+      const errMsg = e.message || '';
+      if (errMsg.includes('토큰') || errMsg.includes('token') || errMsg.includes('접근토큰') || errMsg.includes('만료')) {
+        log(`${modeTag} 잔고 조회 토큰 만료 감지 — 재발급 후 재시도`, 'warn');
+        if (mode === 'real') kisTokenReal = null; else kisTokenPaper = null;
+        try {
+          const newToken = await ensureToken(mode);
+          balance = await getBalance(newToken, config.appKey, config.appSecret, config.cano, mode);
+          log(`${modeTag} 예수금(재시도 성공): ${balance.deposit.toLocaleString()}원`);
+        } catch (e2) {
+          log(`${modeTag} 잔고 조회 재시도 실패: ${e2.message}`, 'error');
+          return;
+        }
+      } else {
+        log(`${modeTag} 잔고 조회 실패: ${errMsg}`, 'error');
+        return;
+      }
     }
     availCash = balance.deposit;
   }
@@ -281,14 +304,27 @@ async function executeBuyPipeline(mode = 'paper') {
       buyResults.push({ ...stock, qty, ordNo: `PAPER-${Date.now()}` });
       appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
     } else {
-      try {
-        const result = await orderBuy(token, config.appKey, config.appSecret, config.cano, { code: stock.code, qty, price: stock.close, orderType: 'market' }, mode);
-        log(`${modeTag} ✅ 매수: ${stock.name}(${stock.code}) ${qty}주 × ${stock.close.toLocaleString()}원 = ${(qty * stock.close).toLocaleString()}원`);
-        buyResults.push({ ...stock, qty, ordNo: result.ordNo });
-        appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
-        await sleep(250);
-      } catch (e) {
-        log(`${modeTag} ❌ 매수실패: ${stock.name}(${stock.code}) — ${e.message}`, 'error');
+      let buyToken = token;
+      let buySuccess = false;
+      for (let tryIdx = 0; tryIdx < 2 && !buySuccess; tryIdx++) {
+        try {
+          const result = await orderBuy(buyToken, config.appKey, config.appSecret, config.cano, { code: stock.code, qty, price: stock.close, orderType: 'market' }, mode);
+          log(`${modeTag} ✅ 매수: ${stock.name}(${stock.code}) ${qty}주 × ${stock.close.toLocaleString()}원 = ${(qty * stock.close).toLocaleString()}원`);
+          buyResults.push({ ...stock, qty, ordNo: result.ordNo });
+          appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
+          buySuccess = true;
+          await sleep(250);
+        } catch (e) {
+          const errMsg = e.message || '';
+          if (tryIdx === 0 && (errMsg.includes('토큰') || errMsg.includes('token') || errMsg.includes('접근토큰') || errMsg.includes('만료'))) {
+            log(`${modeTag} 매수 토큰 만료 감지 — 재발급 후 재시도: ${stock.name}(${stock.code})`, 'warn');
+            if (mode === 'real') kisTokenReal = null; else kisTokenPaper = null;
+            try { buyToken = await ensureToken(mode); } catch { break; }
+          } else {
+            log(`${modeTag} ❌ 매수실패: ${stock.name}(${stock.code}) — ${errMsg}`, 'error');
+            break;
+          }
+        }
       }
     }
   }
@@ -354,8 +390,18 @@ async function _executeSellPipelineInner(mode = 'paper') {
     const sellResults = [];
     for (const pos of st.positions) {
       try {
-        const token = await ensureToken('paper');
-        const cur = await getCurrentPrice(token, config.appKey, config.appSecret, pos.code, 'paper');
+        let token = await ensureToken('paper');
+        let cur;
+        try {
+          cur = await getCurrentPrice(token, config.appKey, config.appSecret, pos.code, 'paper');
+        } catch (te) {
+          const tMsg = te.message || '';
+          if (tMsg.includes('토큰') || tMsg.includes('token') || tMsg.includes('접근토큰') || tMsg.includes('만료')) {
+            kisTokenPaper = null;
+            token = await ensureToken('paper');
+            cur = await getCurrentPrice(token, config.appKey, config.appSecret, pos.code, 'paper');
+          } else { throw te; }
+        }
         const sellPrice = cur.price || pos.buyPrice;
         const { pnl, pnlPct } = calcNetPnl(pos.buyPrice, sellPrice, pos.qty);
         log(`${modeTag} ✅ 매도: ${pos.name}(${pos.code}) ${pos.qty}주 — 매수 ${pos.buyPrice.toLocaleString()} → 매도 ${sellPrice.toLocaleString()} (${(pnlPct * 100).toFixed(2)}%, ${pnl > 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}원)`);
@@ -382,31 +428,36 @@ async function _executeSellPipelineInner(mode = 'paper') {
     return;
   }
 
-  // 실전투자: KIS API 실제 매도
-  let token = await ensureToken('real');
+  // 실전투자: KIS API 실제 매도 (매도 직전 토큰 강제 재발급)
+  let token = await ensureToken('real', true);
   const sellResults = [];
   const failedPositions = [];
 
   for (const pos of st.positions) {
-    try {
-      token = await ensureToken('real');
-      const result = await orderSell(token, config.appKey, config.appSecret, config.cano, { code: pos.code, qty: pos.qty, orderType: 'market' }, 'real');
-      log(`${modeTag} ✅ 매도: ${pos.name}(${pos.code}) ${pos.qty}주 시장가 (주문번호: ${result.ordNo})`);
-      sellResults.push({ ...pos, ordNo: result.ordNo });
-      appendTradeLog({ action: 'SELL', code: pos.code, name: pos.name, qty: pos.qty, buyPrice: pos.buyPrice, preset: config.preset }, 'real');
-      await sleep(250);
-    } catch (e) {
-      const errMsg = e.message || '';
-      if (errMsg.includes('거래정지') || errMsg.includes('매매거래제한')) {
-        log(`${modeTag} 🚫 매도불가(거래정지): ${pos.name}(${pos.code}) — 스킵`, 'error');
-        failedPositions.push({ ...pos, _suspended: true });
-      } else if (errMsg.includes('토큰') || errMsg.includes('token') || errMsg.includes('접근토큰')) {
-        log(`${modeTag} 🔑 토큰 만료 감지 — 재발급 후 재시도: ${pos.name}(${pos.code})`, 'warn');
-        kisTokenReal = null;
-        failedPositions.push(pos);
-      } else {
-        log(`${modeTag} ❌ 매도실패: ${pos.name}(${pos.code}) — ${errMsg}`, 'error');
-        failedPositions.push(pos);
+    let sellSuccess = false;
+    for (let tryIdx = 0; tryIdx < 2 && !sellSuccess; tryIdx++) {
+      try {
+        token = await ensureToken('real');
+        const result = await orderSell(token, config.appKey, config.appSecret, config.cano, { code: pos.code, qty: pos.qty, orderType: 'market' }, 'real');
+        log(`${modeTag} ✅ 매도: ${pos.name}(${pos.code}) ${pos.qty}주 시장가 (주문번호: ${result.ordNo})`);
+        sellResults.push({ ...pos, ordNo: result.ordNo });
+        appendTradeLog({ action: 'SELL', code: pos.code, name: pos.name, qty: pos.qty, buyPrice: pos.buyPrice, preset: config.preset }, 'real');
+        sellSuccess = true;
+        await sleep(250);
+      } catch (e) {
+        const errMsg = e.message || '';
+        if (errMsg.includes('거래정지') || errMsg.includes('매매거래제한')) {
+          log(`${modeTag} 🚫 매도불가(거래정지): ${pos.name}(${pos.code}) — 스킵`, 'error');
+          failedPositions.push({ ...pos, _suspended: true });
+          break;
+        } else if (tryIdx === 0 && (errMsg.includes('토큰') || errMsg.includes('token') || errMsg.includes('접근토큰') || errMsg.includes('만료'))) {
+          log(`${modeTag} 🔑 토큰 만료 감지 — 재발급 후 재시도: ${pos.name}(${pos.code})`, 'warn');
+          kisTokenReal = null;
+        } else {
+          log(`${modeTag} ❌ 매도실패: ${pos.name}(${pos.code}) — ${errMsg}`, 'error');
+          failedPositions.push(pos);
+          break;
+        }
       }
     }
   }
@@ -498,9 +549,22 @@ function stopSellRetry(mode = 'paper') {
 async function checkSellExecutions(sellResults, mode = 'real') {
   const modeTag = mode === 'real' ? '[실전]' : '[모의]';
   const st = getState(mode);
-  const token = await ensureToken(mode);
+  let token = await ensureToken(mode);
   const today = kstNow().toISOString().slice(0, 10).replace(/-/g, '');
-  const orders = await getOrders(token, config.appKey, config.appSecret, config.cano, { startDate: today }, mode);
+  let orders;
+  try {
+    orders = await getOrders(token, config.appKey, config.appSecret, config.cano, { startDate: today }, mode);
+  } catch (e) {
+    const errMsg = e.message || '';
+    if (errMsg.includes('토큰') || errMsg.includes('token') || errMsg.includes('접근토큰') || errMsg.includes('만료')) {
+      log(`${modeTag} 체결 조회 토큰 만료 감지 — 재발급 후 재시도`, 'warn');
+      if (mode === 'real') kisTokenReal = null; else kisTokenPaper = null;
+      token = await ensureToken(mode);
+      orders = await getOrders(token, config.appKey, config.appSecret, config.cano, { startDate: today }, mode);
+    } else {
+      throw e;
+    }
+  }
 
   let dailyPnl = 0;
   let filledCount = 0;
@@ -733,9 +797,21 @@ app.get('/api/balance', async (req, res) => {
       const deposit = (seedCapital + (st.totalPnl || 0)) - holdingValue;
       res.json({ deposit, holdings: st.positions || [] });
     } else {
-      const token = await ensureToken('real');
-      const bal = await getBalance(token, config.appKey, config.appSecret, config.cano, 'real');
-      res.json(bal);
+      let token = await ensureToken('real');
+      try {
+        const bal = await getBalance(token, config.appKey, config.appSecret, config.cano, 'real');
+        res.json(bal);
+      } catch (e) {
+        const errMsg = e.message || '';
+        if (errMsg.includes('토큰') || errMsg.includes('token') || errMsg.includes('접근토큰') || errMsg.includes('만료')) {
+          kisTokenReal = null;
+          token = await ensureToken('real');
+          const bal = await getBalance(token, config.appKey, config.appSecret, config.cano, 'real');
+          res.json(bal);
+        } else {
+          throw e;
+        }
+      }
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
