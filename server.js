@@ -430,7 +430,8 @@ async function _executeSellPipelineInner(mode = 'paper') {
     }
     const dailyPnl = sellResults.reduce((s, r) => s + r.pnl, 0);
     const buyTotal = sellResults.reduce((s, r) => s + (r.buyPrice * r.qty), 0);
-    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: sellResults.length, buyTotal });
+    const avgPct = sellResults.length > 0 ? +(sellResults.reduce((s, r) => s + (r.pnlPct || 0), 0) / sellResults.length).toFixed(2) : 0;
+    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: sellResults.length, buyTotal, avgPct });
     if (st.dailyPnl.length > 365) st.dailyPnl = st.dailyPnl.slice(0, 365);
     st.totalPnl += dailyPnl;
     st.tradingDays++;
@@ -606,7 +607,8 @@ async function checkSellExecutions(sellResults, mode = 'real') {
 
   if (filledCount > 0) {
     const buyTotal = settleDetails.reduce((s, r) => s + (r.buyPrice * r.qty), 0);
-    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: filledCount, buyTotal });
+    const avgPct = settleDetails.length > 0 ? +(settleDetails.reduce((s, r) => s + (r.pnlPct || 0), 0) / settleDetails.length).toFixed(2) : 0;
+    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: filledCount, buyTotal, avgPct });
     if (st.dailyPnl.length > 365) st.dailyPnl = st.dailyPnl.slice(0, 365);
     st.totalPnl += dailyPnl;
     st.tradingDays++;
@@ -762,6 +764,7 @@ app.get('/api/status', (req, res) => {
     lastSell: st.lastSell,
     totalPnl: st.totalPnl || 0,
     tradingDays: st.tradingDays || 0,
+    initialCapital: mode === 'real' ? (config.realInitialCapital || 100000) : config.initialCapital,
     dailyPnl: (st.dailyPnl || []).slice(0, 30),
     lastScanResult: lastScanResult ? {
       totalScanned: lastScanResult.totalScanned,

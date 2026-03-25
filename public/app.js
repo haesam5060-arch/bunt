@@ -25,39 +25,27 @@ async function toggleDailyDetail(row, date) {
     return;
   }
 
-  const buys = trades.filter(t => t.action === 'BUY');
   const sells = trades.filter(t => t.action === 'SELL');
+  if (sells.length === 0) return;
 
-  let html = '<td colspan="4"><div class="daily-detail">';
-
-  if (buys.length > 0) {
-    html += '<div class="detail-section"><div class="detail-title">매수</div><table class="detail-table"><tr><th>종목</th><th>매수가</th><th>수량</th><th>금액</th></tr>';
-    for (const b of buys) {
-      const amt = (b.buyPrice || b.price || 0) * (b.qty || 0);
-      html += `<tr><td>${b.name}</td><td>${(b.buyPrice || b.price || 0).toLocaleString()}</td><td>${b.qty}</td><td>${amt.toLocaleString()}원</td></tr>`;
-    }
-    html += '</table></div>';
+  let html = '<td colspan="7"><div class="daily-detail"><table class="detail-table">';
+  html += '<tr><th>종목</th><th>수량</th><th>매수가</th><th>매도가</th><th>매수금액</th><th>수익률</th><th>손익</th></tr>';
+  let totalPnl = 0, totalBuyAmt = 0, totalSellAmt = 0;
+  for (const s of sells) {
+    const pnlClass = (s.pnl || 0) >= 0 ? 'pnl-pos' : 'pnl-neg';
+    const qty = s.qty || 0;
+    const buyAmt = (s.buyPrice || 0) * qty;
+    const sellAmt = (s.sellPrice || 0) * qty;
+    totalPnl += (s.pnl || 0);
+    totalBuyAmt += buyAmt;
+    totalSellAmt += sellAmt;
+    html += `<tr><td>${s.name}</td><td>${qty}</td><td>${(s.buyPrice || 0).toLocaleString()}</td><td>${(s.sellPrice || 0).toLocaleString()}</td><td>${buyAmt.toLocaleString()}원</td><td class="${pnlClass}">${(s.pnlPct || 0) > 0 ? '+' : ''}${(s.pnlPct || 0).toFixed(2)}%</td><td class="${pnlClass}">${(s.pnl || 0) > 0 ? '+' : ''}${Math.round(s.pnl || 0).toLocaleString()}원</td></tr>`;
   }
+  const totalPnlClass = totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+  const avgPct = sells.length > 0 ? (sells.reduce((s,t) => s + (t.pnlPct || 0), 0) / sells.length).toFixed(2) : '0.00';
+  html += `<tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td>${sells.reduce((s,t)=>s+(t.qty||0),0)}</td><td></td><td></td><td>${totalBuyAmt.toLocaleString()}원</td><td class="${totalPnlClass}">${avgPct > 0 ? '+' : ''}${avgPct}%</td><td class="${totalPnlClass}">${totalPnl > 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}원</td></tr>`;
 
-  if (sells.length > 0) {
-    html += '<div class="detail-section"><div class="detail-title">매도</div><table class="detail-table"><tr><th>종목</th><th>수량</th><th>매수가</th><th>매수금액</th><th>매도가</th><th>매도금액</th><th>수익률</th><th>손익</th></tr>';
-    let totalBuyAmt = 0, totalSellAmt = 0, totalPnl = 0;
-    for (const s of sells) {
-      const pnlClass = (s.pnl || 0) >= 0 ? 'pnl-pos' : 'pnl-neg';
-      const qty = s.qty || 0;
-      const buyAmt = (s.buyPrice || 0) * qty;
-      const sellAmt = (s.sellPrice || 0) * qty;
-      totalBuyAmt += buyAmt;
-      totalSellAmt += sellAmt;
-      totalPnl += (s.pnl || 0);
-      html += `<tr><td>${s.name}</td><td>${qty}</td><td>${(s.buyPrice || 0).toLocaleString()}</td><td>${buyAmt.toLocaleString()}원</td><td>${(s.sellPrice || 0).toLocaleString()}</td><td>${sellAmt.toLocaleString()}원</td><td class="${pnlClass}">${(s.pnlPct || 0) > 0 ? '+' : ''}${(s.pnlPct || 0).toFixed(2)}%</td><td class="${pnlClass}">${(s.pnl || 0) > 0 ? '+' : ''}${Math.round(s.pnl || 0).toLocaleString()}원</td></tr>`;
-    }
-    const totalPnlClass = totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-    html += `<tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td>${sells.reduce((s,t)=>s+(t.qty||0),0)}</td><td></td><td>${totalBuyAmt.toLocaleString()}원</td><td></td><td>${totalSellAmt.toLocaleString()}원</td><td></td><td class="${totalPnlClass}">${totalPnl > 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}원</td></tr>`;
-    html += '</table></div>';
-  }
-
-  html += '</div></td>';
+  html += '</table></div></td>';
   const detailRow = document.createElement('tr');
   detailRow.className = 'daily-detail-row';
   detailRow.innerHTML = html;
@@ -209,12 +197,13 @@ async function refreshStatus() {
     const seed = data.initialCapital || 1000000;
     pnlBody.innerHTML = dailyPnl.map((p, i) => {
       const cum = cumPnls[i];
-      const dayPct = p.buyTotal ? (p.pnl / p.buyTotal * 100).toFixed(2) : (p.pnl / seed * 100).toFixed(2);
+      const dayPct = p.avgPct != null ? (+p.avgPct).toFixed(2) : (p.buyTotal ? (p.pnl / p.buyTotal * 100).toFixed(2) : (p.pnl / seed * 100).toFixed(2));
       const cumPct = (cum / seed * 100).toFixed(2);
       return `
       <tr class="pnl-row" data-date="${p.date}" style="cursor:pointer;" onclick="toggleDailyDetail(this, '${p.date}')">
         <td>${p.date}</td>
         <td>${p.stocks}</td>
+        <td style="font-size:11px;">${p.buyTotal ? Math.round(p.buyTotal).toLocaleString() + '원' : '-'}</td>
         <td class="${p.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${p.pnl > 0 ? '+' : ''}${Math.round(p.pnl).toLocaleString()}원</td>
         <td class="${p.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${p.pnl > 0 ? '+' : ''}${dayPct}%</td>
         <td class="${cum >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${cum > 0 ? '+' : ''}${Math.round(cum).toLocaleString()}원</td>
@@ -227,7 +216,7 @@ async function refreshStatus() {
       if (openRow) toggleDailyDetail(openRow, _openDetailDate);
     }
   } else {
-    pnlBody.innerHTML = '<tr><td colspan="6" class="empty-msg">아직 거래 내역 없음</td></tr>';
+    pnlBody.innerHTML = '<tr><td colspan="7" class="empty-msg">아직 거래 내역 없음</td></tr>';
   }
 
   // 누적 PnL + 수익률
