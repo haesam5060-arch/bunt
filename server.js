@@ -421,7 +421,7 @@ async function _executeSellPipelineInner(mode = 'paper') {
         const { pnl, pnlPct } = calcNetPnl(pos.buyPrice, sellPrice, pos.qty);
         log(`${modeTag} ✅ 매도: ${pos.name}(${pos.code}) ${pos.qty}주 — 매수 ${pos.buyPrice.toLocaleString()} → 매도 ${sellPrice.toLocaleString()} (${(pnlPct * 100).toFixed(2)}%, ${pnl > 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}원)`);
         appendTradeLog({ action: 'SELL', code: pos.code, name: pos.name, qty: pos.qty, buyPrice: pos.buyPrice, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2), preset: config.preset }, mode);
-        sellResults.push({ ...pos, sellPrice, pnl, pnlPct });
+        sellResults.push({ ...pos, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2) });
         await sleep(250);
       } catch (e) {
         log(`${modeTag} ❌ 매도 현재가 조회 실패: ${pos.name}(${pos.code}) — ${e.message}`, 'error');
