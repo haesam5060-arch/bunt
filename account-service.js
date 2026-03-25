@@ -69,14 +69,20 @@ function kisRequest(method, apiPath, params, { token, appKey, appSecret, trId, b
 }
 
 // ── 토큰 발급/갱신 ──────────────────────────────────────────
-async function getToken(appKey, appSecret, tradingMode = 'paper') {
-  // 캐시된 토큰 확인
-  try {
-    const cached = JSON.parse(fs.readFileSync(TOKEN_FILE, 'utf8'));
-    if (cached.token && cached.expires && new Date(cached.expires) > new Date()) {
-      return cached.token;
-    }
-  } catch {}
+async function getToken(appKey, appSecret, tradingMode = 'paper', { forceRefresh = false } = {}) {
+  const tokenFilePath = path.join(DATA_DIR, `token-${tradingMode}.json`);
+  // 기존 token.json 호환: 모드별 파일 없으면 공용 파일 사용
+  const tPath = fs.existsSync(tokenFilePath) ? tokenFilePath : TOKEN_FILE;
+
+  // 캐시된 토큰 확인 (강제 재발급이면 스킵)
+  if (!forceRefresh) {
+    try {
+      const cached = JSON.parse(fs.readFileSync(tPath, 'utf8'));
+      if (cached.token && cached.expires && new Date(cached.expires) > new Date()) {
+        return cached.token;
+      }
+    } catch {}
+  }
 
   // 새 토큰 발급
   const trIds = getTrIds(tradingMode);
@@ -106,9 +112,9 @@ async function getToken(appKey, appSecret, tradingMode = 'paper') {
 
   if (!result.access_token) throw new Error(result.message || '토큰 발급 실패');
 
-  // 캐시 저장 (만료 23시간 후)
+  // 캐시 저장 (만료 23시간 후, 모드별 분리)
   const expires = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString();
-  fs.writeFileSync(TOKEN_FILE, JSON.stringify({ token: result.access_token, expires }, null, 2), 'utf8');
+  fs.writeFileSync(tokenFilePath, JSON.stringify({ token: result.access_token, expires }, null, 2), 'utf8');
 
   return result.access_token;
 }

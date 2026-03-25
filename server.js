@@ -111,10 +111,25 @@ async function ensureToken(mode = 'paper', forceRefresh = false) {
   const isReal = mode === 'real';
   let token = isReal ? kisTokenReal : kisTokenPaper;
 
-  // 강제 재발급: 실전 매수/매도 직전에 사용
+  // 강제 검증: 실전 매수/매도 직전에 사용
+  // KIS API는 토큰 발급 1분당 1회 제한이므로 무조건 재발급하면 안 됨
+  // 대신: 토큰으로 현재가 조회(가벼운 API)를 시도하여 유효성 실제 검증
   if (forceRefresh) {
-    log(`[${isReal ? '실전' : '모의'}] 🔑 토큰 강제 재발급 (매매 직전 안전장치)`);
-    token = await getToken(config.appKey, config.appSecret, mode);
+    log(`[${isReal ? '실전' : '모의'}] 🔑 토큰 유효성 실제 검증 (매매 직전 안전장치)`);
+    if (token) {
+      try {
+        // 삼성전자(005930) 현재가 조회로 토큰 유효성 실검
+        await getCurrentPrice(token, config.appKey, config.appSecret, '005930', mode);
+        log(`[${isReal ? '실전' : '모의'}] ✅ 토큰 유효 확인됨`);
+        return token;
+      } catch (e) {
+        log(`[${isReal ? '실전' : '모의'}] ⚠️ 토큰 무효 — 재발급 시도: ${e.message}`, 'warn');
+        token = null;
+        if (isReal) kisTokenReal = null; else kisTokenPaper = null;
+      }
+    }
+    // 토큰이 없거나 무효한 경우에만 재발급
+    token = await getToken(config.appKey, config.appSecret, mode, { forceRefresh: true });
     if (isReal) kisTokenReal = token; else kisTokenPaper = token;
     return token;
   }
