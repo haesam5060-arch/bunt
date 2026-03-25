@@ -72,7 +72,7 @@ async function sendBuyReport(stocks, mode, presetLabel) {
     </div>
   `;
 
-  await send(`[BUNT${mode === 'real' ? ' 실전' : ''}] 매수 ${stocks.length}종목 — ${totalAmt.toLocaleString()}원`, html);
+  await send(`[주식] 🟡 매수 ${stocks.length}종목 — ${totalAmt.toLocaleString()}원${mode === 'real' ? ' (실전)' : ''}`, html);
 }
 
 // ── 매도/정산 결과 이메일 ────────────────────────────────────
@@ -119,7 +119,7 @@ async function sendSellReport(results, dailyPnl, mode, presetLabel) {
     </div>
   `;
 
-  await send(`[BUNT${mode === 'real' ? ' 실전' : ''}] 매도 정산 ${dailyPnl > 0 ? '+' : ''}${dailyPnl.toLocaleString()}원`, html);
+  await send(`[주식] ${dailyPnl >= 0 ? '🟢' : '🔴'} 매도 정산 ${dailyPnl > 0 ? '+' : ''}${dailyPnl.toLocaleString()}원${mode === 'real' ? ' (실전)' : ''}`, html);
 }
 
 async function sendError(title, detail) {
@@ -129,7 +129,7 @@ async function sendError(title, detail) {
       <pre style="color:#fff;background:#16213e;padding:15px;border-radius:8px;">${detail}</pre>
       <p style="color:#888;">${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
     </div>`;
-  await send(`[BUNT 🚨] ${title}`, html);
+  await send(`[주식] 🚨 ${title}`, html);
 }
 
 module.exports = { init, isReady, send, sendBuyReport, sendSellReport, sendError };

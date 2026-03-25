@@ -5,3 +5,4 @@ data/state*.json
 data/trade-log*.json
 data/order-log*.json
 data/ohlcv
+logs/

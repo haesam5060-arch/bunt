@@ -206,14 +206,19 @@ async function refreshStatus() {
       cumPnls.push(cumPnl);
       cumPnl -= dailyPnl[i].pnl;
     }
+    const seed = data.initialCapital || 1000000;
     pnlBody.innerHTML = dailyPnl.map((p, i) => {
       const cum = cumPnls[i];
+      const dayPct = (p.pnl / seed * 100).toFixed(2);
+      const cumPct = (cum / seed * 100).toFixed(2);
       return `
       <tr class="pnl-row" data-date="${p.date}" style="cursor:pointer;" onclick="toggleDailyDetail(this, '${p.date}')">
         <td>${p.date}</td>
         <td>${p.stocks}</td>
         <td class="${p.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${p.pnl > 0 ? '+' : ''}${Math.round(p.pnl).toLocaleString()}원</td>
+        <td class="${p.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${p.pnl > 0 ? '+' : ''}${dayPct}%</td>
         <td class="${cum >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${cum > 0 ? '+' : ''}${Math.round(cum).toLocaleString()}원</td>
+        <td class="${cum >= 0 ? 'pnl-pos' : 'pnl-neg'}" style="font-size:11px;">${cum > 0 ? '+' : ''}${cumPct}%</td>
       </tr>`;
     }).join('');
     // 펼쳐진 상세 복원
@@ -222,7 +227,7 @@ async function refreshStatus() {
       if (openRow) toggleDailyDetail(openRow, _openDetailDate);
     }
   } else {
-    pnlBody.innerHTML = '<tr><td colspan="4" class="empty-msg">아직 거래 내역 없음</td></tr>';
+    pnlBody.innerHTML = '<tr><td colspan="6" class="empty-msg">아직 거래 내역 없음</td></tr>';
   }
 
   // 누적 PnL + 수익률
