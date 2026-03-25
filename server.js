@@ -429,7 +429,8 @@ async function _executeSellPipelineInner(mode = 'paper') {
       }
     }
     const dailyPnl = sellResults.reduce((s, r) => s + r.pnl, 0);
-    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: sellResults.length });
+    const buyTotal = sellResults.reduce((s, r) => s + (r.buyPrice * r.qty), 0);
+    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: sellResults.length, buyTotal });
     if (st.dailyPnl.length > 365) st.dailyPnl = st.dailyPnl.slice(0, 365);
     st.totalPnl += dailyPnl;
     st.tradingDays++;
@@ -604,7 +605,8 @@ async function checkSellExecutions(sellResults, mode = 'real') {
   if (pendingCount > 0) log(`${modeTag} ⚠️ 체결확인: ${filledCount}건 완료, ${pendingCount}건 미체결`, 'warn');
 
   if (filledCount > 0) {
-    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: filledCount });
+    const buyTotal = settleDetails.reduce((s, r) => s + (r.buyPrice * r.qty), 0);
+    st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: filledCount, buyTotal });
     if (st.dailyPnl.length > 365) st.dailyPnl = st.dailyPnl.slice(0, 365);
     st.totalPnl += dailyPnl;
     st.tradingDays++;

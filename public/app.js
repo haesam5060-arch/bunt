@@ -209,7 +209,7 @@ async function refreshStatus() {
     const seed = data.initialCapital || 1000000;
     pnlBody.innerHTML = dailyPnl.map((p, i) => {
       const cum = cumPnls[i];
-      const dayPct = (p.pnl / seed * 100).toFixed(2);
+      const dayPct = p.buyTotal ? (p.pnl / p.buyTotal * 100).toFixed(2) : (p.pnl / seed * 100).toFixed(2);
       const cumPct = (cum / seed * 100).toFixed(2);
       return `
       <tr class="pnl-row" data-date="${p.date}" style="cursor:pointer;" onclick="toggleDailyDetail(this, '${p.date}')">

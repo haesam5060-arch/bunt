@@ -96,6 +96,8 @@ async function sendSellReport(results, dailyPnl, mode, presetLabel) {
     `;
   }).join('');
 
+  const buyTotal = results.reduce((s, r) => s + (r.buyPrice || 0) * (r.qty || 0), 0);
+  const dailyPnlPct = buyTotal > 0 ? (dailyPnl / buyTotal * 100).toFixed(2) : '0.00';
   const pnlColor = dailyPnl >= 0 ? '#4caf50' : '#ef5350';
 
   const html = `
@@ -112,8 +114,8 @@ async function sendSellReport(results, dailyPnl, mode, presetLabel) {
         </tr></thead>
         <tbody>${rows}</tbody>
         <tfoot><tr style="border-top:2px solid #333;">
-          <td colspan="4" style="padding:8px;font-weight:700;">일일 합계</td>
-          <td style="padding:8px;text-align:right;font-weight:700;color:${pnlColor};">${dailyPnl > 0 ? '+' : ''}${dailyPnl.toLocaleString()}원</td>
+          <td colspan="4" style="padding:8px;font-weight:700;">일일 합계 (매수총액 ${buyTotal.toLocaleString()}원)</td>
+          <td style="padding:8px;text-align:right;font-weight:700;color:${pnlColor};">${dailyPnl > 0 ? '+' : ''}${dailyPnl.toLocaleString()}원 (${dailyPnlPct}%)</td>
         </tr></tfoot>
       </table>
     </div>
