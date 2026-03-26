@@ -14,6 +14,37 @@ const {
 } = require('./account-service');
 const emailService = require('./email-service');
 
+// ── 디스코드 알림 ────────────────────────────────────────────
+const _cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'config.json'), 'utf8'));
+const DISCORD_BOT_TOKEN = _cfg.discordBotToken || '';
+const DISCORD_CHANNEL_ID = _cfg.discordChannelId || '';
+
+function sendDiscord(message) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ content: message });
+    const req = https.request({
+      hostname: 'discord.com',
+      path: `/api/v10/channels/${DISCORD_CHANNEL_ID}/messages`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bot ${DISCORD_BOT_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, res => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve();
+        else reject(new Error(`Discord ${res.statusCode}: ${Buffer.concat(chunks).toString()}`));
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 // ── 설정/상태 파일 (모드별 분리) ─────────────────────────────
 const CONFIG_FILE = path.join(__dirname, 'data', 'config.json');
 const DATA_DIR    = path.join(__dirname, 'data');
@@ -98,6 +129,8 @@ function log(msg, level = 'info') {
 // ── KIS 토큰 관리 (모드별 분리) ──────────────────────────────
 let kisTokenPaper = null;
 let kisTokenReal  = null;
+let kisTokenPaperExpires = 0;
+let kisTokenRealExpires  = 0;
 let sellRetryTimerPaper = null;
 let sellRetryTimerReal  = null;
 let sellRetryCountPaper = 0;
@@ -136,37 +169,30 @@ async function ensureToken(mode = 'paper', forceRefresh = false) {
 
   if (!token) {
     token = await getToken(config.appKey, config.appSecret, mode);
-    if (isReal) kisTokenReal = token; else kisTokenPaper = token;
+    if (isReal) { kisTokenReal = token; kisTokenRealExpires = Date.now() + 23 * 60 * 60 * 1000; }
+    else { kisTokenPaper = token; kisTokenPaperExpires = Date.now() + 23 * 60 * 60 * 1000; }
     log(`[${isReal ? '실전' : '모의'}] KIS 토큰 발급 완료`);
   } else {
-    try {
-      const tf = tokenFile(mode);
-      // 기존 token.json 호환 + 모드별 분리
-      const tPath = fs.existsSync(tf) ? tf : path.join(__dirname, 'data', 'token.json');
-      const tokenData = JSON.parse(fs.readFileSync(tPath, 'utf8'));
-      const TOKEN_MARGIN_MS = 5 * 60 * 1000; // 만료 5분 전에 미리 재발급
-      if (!tokenData.expires || new Date(tokenData.expires) <= new Date(Date.now() + TOKEN_MARGIN_MS)) {
-        log(`[${isReal ? '실전' : '모의'}] KIS 토큰 만료 감지 — 재발급`, 'warn');
-        token = null;
-        token = await getToken(config.appKey, config.appSecret, mode);
-        if (isReal) kisTokenReal = token; else kisTokenPaper = token;
-        log(`[${isReal ? '실전' : '모의'}] KIS 토큰 재발급 완료`);
-      }
-    } catch {
-      token = null;
+    // 메모리에 저장된 만료시간으로 체크 (파일 매번 읽지 않음)
+    const TOKEN_MARGIN_MS = 5 * 60 * 1000;
+    const expiresAt = isReal ? kisTokenRealExpires : kisTokenPaperExpires;
+    if (!expiresAt || expiresAt <= Date.now() + TOKEN_MARGIN_MS) {
+      log(`[${isReal ? '실전' : '모의'}] KIS 토큰 만료 감지 — 재발급`, 'warn');
       token = await getToken(config.appKey, config.appSecret, mode);
-      if (isReal) kisTokenReal = token; else kisTokenPaper = token;
+      if (isReal) { kisTokenReal = token; kisTokenRealExpires = Date.now() + 23 * 60 * 60 * 1000; }
+      else { kisTokenPaper = token; kisTokenPaperExpires = Date.now() + 23 * 60 * 60 * 1000; }
+      log(`[${isReal ? '실전' : '모의'}] KIS 토큰 재발급 완료`);
     }
   }
   return token;
 }
 
 // ── 매수 재시도 (DNS/네트워크 에러 대응) ──────────────────────
-async function executeBuyWithRetry(mode = 'paper', maxRetry = 3) {
+async function executeBuyWithRetry(mode = 'paper', maxRetry = 3, phase = 1) {
   const modeTag = mode === 'real' ? '[실전]' : '[모의]';
   for (let attempt = 1; attempt <= maxRetry; attempt++) {
     try {
-      await executeBuyPipeline(mode);
+      await executeBuyPipeline(mode, phase);
       return; // 성공 시 종료
     } catch (e) {
       const isNetErr = /ENOTFOUND|ETIMEDOUT|ECONNRESET|ECONNREFUSED|EAI_AGAIN|socket hang up/i.test(e.message);
@@ -201,14 +227,102 @@ async function executeSellWithRetry(mode = 'paper', maxRetry = 3) {
   }
 }
 
-// ── 핵심 로직: 스캔 + 매수 ──────────────────────────────────
-async function executeBuyPipeline(mode = 'paper') {
+// ── 핵심 로직: 스캔 + 분할매수 (Phase 1: 정규장 50%, Phase 2: 동시호가 50%) ──
+// phase: 1 = 정규장 매수 (15:05, 스캔+50% 매수), 2 = 동시호가 매수 (15:21, 나머지 50%)
+const _buyLock = { paper: false, real: false };
+
+async function executeBuyPipeline(mode = 'paper', phase = 1) {
+  if (_buyLock[mode]) {
+    log(`[${mode === 'real' ? '실전' : '모의'}] 매수 이미 진행 중 — 중복 실행 방지`);
+    return;
+  }
+  _buyLock[mode] = true;
+  try {
+    await _executeBuyPipelineInner(mode, phase);
+  } finally {
+    _buyLock[mode] = false;
+  }
+}
+
+async function _executeBuyPipelineInner(mode = 'paper', phase = 1) {
   const modeTag = mode === 'real' ? '[실전]' : '[모의]';
+  const phaseTag = phase === 1 ? '1차(정규장)' : '2차(동시호가)';
   const st = getState(mode);
   const preset = config.presets[config.preset];
   if (!preset) { log(`${modeTag} 프리셋 '${config.preset}' 없음`, 'error'); return; }
 
-  log(`${modeTag} === 매수 파이프라인 시작 (${preset.label}) ===`);
+  log(`${modeTag} === ${phaseTag} 매수 파이프라인 시작 (${preset.label}) ===`);
+
+  // ── Phase 2: 2차 매수 (동시호가) ──
+  if (phase === 2) {
+    if (!st.pendingPhase2 || !st.pendingPhase2.stocks || st.pendingPhase2.stocks.length === 0) {
+      log(`${modeTag} 2차 매수 대상 없음 — 스킵 (1차에서 선정된 종목 없음)`);
+      return;
+    }
+    const todayStr = kstNow().toISOString().slice(0, 10);
+    if (st.pendingPhase2.date !== todayStr) {
+      log(`${modeTag} 2차 매수 데이터가 오늘꺼가 아님 (${st.pendingPhase2.date}) — 스킵`, 'warn');
+      st.pendingPhase2 = null;
+      saveState(st, mode);
+      return;
+    }
+
+    const selected = st.pendingPhase2.stocks;
+    const totalAlloc = st.pendingPhase2.totalAlloc; // 2차용 총 배분금
+    const perStock = Math.floor(totalAlloc / selected.length);
+    log(`${modeTag} 2차 매수: ${selected.length}종목, 종목당 ${perStock.toLocaleString()}원 배분 (총 ${totalAlloc.toLocaleString()}원)`);
+
+    const buyResults = await _executeOrders(mode, selected, perStock, preset);
+
+    // 상태 업데이트: 기존 1차 포지션에 2차 추가 (같은 종목은 수량 합산)
+    st.pendingPhase2 = null; // 2차 완료
+    if (mode === 'paper') {
+      for (const br of buyResults) {
+        const existing = st.positions.find(p => p.code === br.code);
+        if (existing) {
+          // 같은 종목: 평균 매수가 계산 + 수량 합산
+          const totalQty = existing.qty + br.qty;
+          const avgPrice = Math.round((existing.buyPrice * existing.qty + br.close * br.qty) / totalQty);
+          existing.qty = totalQty;
+          existing.buyPrice = avgPrice;
+          log(`${modeTag} 🔄 합산: ${br.name} ${existing.qty}주 (평균 ${avgPrice.toLocaleString()}원)`);
+        } else {
+          st.positions.push({
+            code: br.code, name: br.name, qty: br.qty,
+            buyPrice: br.close, buyDate: kstNow().toISOString().slice(0, 10),
+            changeRate: br.changeRate, ordNo: br.ordNo,
+          });
+        }
+        appendTradeLog({ action: 'BUY', code: br.code, name: br.name, qty: br.qty, price: br.close, changeRate: br.changeRate, preset: config.preset, phase: 2 }, mode);
+      }
+      saveState(st, mode);
+      setStateByMode(mode, st);
+      log(`${modeTag} === 2차 매수 완료: ${buyResults.length}종목 ===`);
+      if (buyResults.length > 0) {
+        emailService.sendBuyReport(buyResults, mode, `${preset.label} [2차/동시호가]`).catch(() => {});
+      }
+    } else {
+      // 실전: 주문 접수 → 15:32 체결 확인에서 1차+2차 통합 처리
+      for (const br of buyResults) {
+        appendTradeLog({ action: 'BUY', code: br.code, name: br.name, qty: br.qty, price: br.close, changeRate: br.changeRate, preset: config.preset, phase: 2 }, mode);
+      }
+      saveState(st, mode);
+      setStateByMode(mode, st);
+      log(`${modeTag} === 2차 주문 접수 완료: ${buyResults.length}종목 ===`);
+
+      // 15:32 체결 확인 (1차+2차 통합)
+      _scheduleSettlementCheck(mode, st, buyResults, preset, true);
+    }
+    return;
+  }
+
+  // ── Phase 1: 1차 매수 (정규장) ──
+
+  // 0. 기존 포지션 보유 시 매수 스킵
+  if (st.positions && st.positions.length > 0) {
+    log(`${modeTag} ⚠️ 기존 보유 ${st.positions.length}종목 있음 — 매수 스킵 (매도 후 매수)`);
+    return;
+  }
 
   // 1. 네이버 스캔
   let scanResult;
@@ -225,6 +339,7 @@ async function executeBuyPipeline(mode = 'paper') {
   if (scanResult.selected.length === 0) {
     log(`${modeTag} 필터 통과 종목 없음 — 오늘 매수 스킵`);
     st.lastScan = new Date().toISOString();
+    st.pendingPhase2 = null;
     saveState(st, mode);
     return;
   }
@@ -256,6 +371,7 @@ async function executeBuyPipeline(mode = 'paper') {
     if (scanResult.selected.length === 0) {
       log(`${modeTag} 재진입 필터 후 종목 없음 — 매수 스킵`);
       st.lastScan = new Date().toISOString();
+      st.pendingPhase2 = null;
       saveState(st, mode);
       return;
     }
@@ -300,33 +416,82 @@ async function executeBuyPipeline(mode = 'paper') {
     return;
   }
 
-  // 3. 종목별 투자금 균등 배분
+  // 3. 50/50 분할: 1차 50%, 2차 50% 예약
   const selected = scanResult.selected;
-  const perStock = Math.floor(availCash / selected.length);
-  log(`${modeTag} ${selected.length}종목 선정, 종목당 ${perStock.toLocaleString()}원 배분`);
+  const phase1Cash = Math.floor(availCash * 0.5);
+  const phase2Cash = availCash - phase1Cash;
+  const perStock = Math.floor(phase1Cash / selected.length);
+  log(`${modeTag} ${selected.length}종목 선정, 1차 ${phase1Cash.toLocaleString()}원 (종목당 ${perStock.toLocaleString()}원) / 2차 ${phase2Cash.toLocaleString()}원 예약`);
 
-  // 4. 매수 주문 실행
+  // 4. 1차 매수 주문 실행 (정규장)
+  const buyResults = await _executeOrders(mode, selected, perStock, preset);
+
+  // 5. 2차 매수 예약 저장 (pendingPhase2)
+  st.pendingPhase2 = {
+    date: kstNow().toISOString().slice(0, 10),
+    stocks: selected, // 같은 종목 리스트
+    totalAlloc: phase2Cash,
+  };
+
+  // 6. 거래 기록 (1차)
+  for (const br of buyResults) {
+    appendTradeLog({ action: 'BUY', code: br.code, name: br.name, qty: br.qty, price: br.close, changeRate: br.changeRate, preset: config.preset, phase: 1 }, mode);
+  }
+
+  // 7. 상태 업데이트
+  if (mode === 'paper') {
+    st.positions = buyResults.map(s => ({
+      code: s.code, name: s.name, qty: s.qty,
+      buyPrice: s.close, buyDate: new Date().toISOString().slice(0, 10),
+      changeRate: s.changeRate, ordNo: s.ordNo,
+    }));
+    st.lastBuy = new Date().toISOString();
+    st.lastScan = new Date().toISOString();
+    saveState(st, mode);
+    setStateByMode(mode, st);
+    log(`${modeTag} === 1차 매수 완료: ${buyResults.length}종목 (2차 ${selected.length}종목 15:21 예정) ===`);
+    if (buyResults.length > 0) {
+      emailService.sendBuyReport(buyResults, mode, `${preset.label} [1차/정규장]`).catch(() => {});
+    }
+  } else {
+    st.lastBuy = new Date().toISOString();
+    st.lastScan = new Date().toISOString();
+    if (buyResults.length > 0) {
+      st.positions = [];
+    }
+    saveState(st, mode);
+    setStateByMode(mode, st);
+    log(`${modeTag} === 1차 주문 접수 완료: ${buyResults.length}종목 (2차 15:21 예정) ===`);
+    // 실전 1차: 15:32 체결확인 예약 (2차 실패 대비 안전장치)
+    if (buyResults.length > 0) {
+      _scheduleSettlementCheck(mode, st, buyResults, preset, false);
+    }
+  }
+}
+
+// ── 주문 실행 헬퍼 (1차/2차 공용) ──────────────────────────────
+async function _executeOrders(mode, selected, perStock, preset) {
+  const modeTag = mode === 'real' ? '[실전]' : '[모의]';
   const buyResults = [];
+
   for (const stock of selected) {
     const qty = Math.floor(perStock / stock.close);
     if (qty <= 0) {
-      log(`${modeTag} ${stock.name}(${stock.code}): 단가 ${stock.close}원 > 배분금 → 스킵`, 'warn');
+      log(`${modeTag} ${stock.name}(${stock.code}): 단가 ${stock.close}원 > 배분금 ${perStock.toLocaleString()}원 → 스킵`, 'warn');
       continue;
     }
 
     if (mode === 'paper') {
       log(`${modeTag} ✅ 매수: ${stock.name}(${stock.code}) ${qty}주 × ${stock.close.toLocaleString()}원 = ${(qty * stock.close).toLocaleString()}원`);
       buyResults.push({ ...stock, qty, ordNo: `PAPER-${Date.now()}` });
-      appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
     } else {
-      let buyToken = token;
+      let buyToken = await ensureToken(mode);
       let buySuccess = false;
       for (let tryIdx = 0; tryIdx < 2 && !buySuccess; tryIdx++) {
         try {
           const result = await orderBuy(buyToken, config.appKey, config.appSecret, config.cano, { code: stock.code, qty, price: stock.close, orderType: 'market' }, mode);
           log(`${modeTag} ✅ 매수: ${stock.name}(${stock.code}) ${qty}주 × ${stock.close.toLocaleString()}원 = ${(qty * stock.close).toLocaleString()}원`);
           buyResults.push({ ...stock, qty, ordNo: result.ordNo });
-          appendTradeLog({ action: 'BUY', code: stock.code, name: stock.name, qty, price: stock.close, changeRate: stock.changeRate, preset: config.preset }, mode);
           buySuccess = true;
           await sleep(250);
         } catch (e) {
@@ -343,20 +508,83 @@ async function executeBuyPipeline(mode = 'paper') {
       }
     }
   }
+  return buyResults;
+}
 
-  // 5. 상태 업데이트
-  st.positions = buyResults.map(s => ({
-    code: s.code, name: s.name, qty: s.qty,
-    buyPrice: s.close, buyDate: new Date().toISOString().slice(0, 10),
-    changeRate: s.changeRate, ordNo: s.ordNo,
-  }));
-  st.lastBuy = new Date().toISOString();
-  st.lastScan = new Date().toISOString();
-  saveState(st, mode);
-  setStateByMode(mode, st);
+// ── 체결 확인 스케줄러 (실전 전용) ────────────────────────────
+function _scheduleSettlementCheck(mode, st, phase2BuyResults, preset, isMerge = false) {
+  const modeTag = mode === 'real' ? '[실전]' : '[모의]';
+  const now = kstNow();
+  const settleTime = new Date(now);
+  settleTime.setHours(15, 32, 0, 0);
+  const waitMs = Math.max(settleTime - now, 0);
+  log(`${modeTag} ⏳ 체결 확인까지 ${Math.ceil(waitMs / 1000)}초 대기`);
 
-  log(`${modeTag} === 매수 완료: ${buyResults.length}종목 ===`);
-  emailService.sendBuyReport(buyResults, mode, preset.label).catch(() => {});
+  setTimeout(async () => {
+    try {
+      log(`${modeTag} === 체결 확인 시작 ${isMerge ? '(1차+2차 통합)' : ''} ===`);
+      const chkToken = await ensureToken('real');
+      const today = kstNow().toISOString().slice(0, 10).replace(/-/g, '');
+      const orders = await getOrders(chkToken, config.appKey, config.appSecret, config.cano, { startDate: today }, 'real');
+
+      // 같은 종목 BUY 주문들을 합산하여 체결 확인
+      const codeSet = new Set();
+      const tradeLog = loadTradeLog('real');
+      const todayStr = kstNow().toISOString().slice(0, 10);
+      for (const t of tradeLog) {
+        if (t.action === 'BUY' && t.timestamp && t.timestamp.startsWith(todayStr)) {
+          codeSet.add(t.code);
+        }
+      }
+      // phase2 결과도 포함
+      for (const br of phase2BuyResults) codeSet.add(br.code);
+
+      const confirmedPositions = [];
+      const failedStocks = [];
+
+      for (const code of codeSet) {
+        // 해당 종목의 모든 BUY 체결 합산
+        const filledOrders = orders.filter(o => o.code === code && o.side === 'BUY' && o.filledQty > 0);
+        if (filledOrders.length > 0) {
+          const totalQty = filledOrders.reduce((s, o) => s + o.filledQty, 0);
+          const totalAmt = filledOrders.reduce((s, o) => s + (o.avgPrice || o.ordPrice) * o.filledQty, 0);
+          const avgPrice = Math.round(totalAmt / totalQty);
+          const name = phase2BuyResults.find(b => b.code === code)?.name ||
+                       tradeLog.find(t => t.code === code)?.name || code;
+          const changeRate = phase2BuyResults.find(b => b.code === code)?.changeRate || 0;
+
+          confirmedPositions.push({
+            code, name, qty: totalQty,
+            buyPrice: avgPrice, buyDate: todayStr,
+            changeRate, ordNo: filledOrders[0].ordNo || '',
+          });
+          log(`${modeTag} ✅ 체결확인: ${name}(${code}) ${totalQty}주 × ${avgPrice.toLocaleString()}원 (${filledOrders.length}건 합산)`);
+        } else {
+          const name = phase2BuyResults.find(b => b.code === code)?.name ||
+                       tradeLog.find(t => t.code === code)?.name || code;
+          failedStocks.push(name);
+          log(`${modeTag} ❌ 미체결: ${name}(${code}) — 상한가 물량 부족 추정`, 'warn');
+        }
+      }
+
+      const realSt = getState('real');
+      realSt.positions = confirmedPositions;
+      if (isMerge) realSt.pendingPhase2 = null; // 2차 완료 후에만 클리어
+      saveState(realSt, 'real');
+      setStateByMode('real', realSt);
+
+      const phaseLabel = isMerge ? '1차+2차 통합' : '1차(정규장)';
+      const summary = `📋 **[번트 체결확인]** 실전 매수 결과 (${phaseLabel})\n✅ 체결: ${confirmedPositions.length}종목\n${confirmedPositions.map(p => `  - ${p.name} ${p.qty}주 × ${p.buyPrice.toLocaleString()}원`).join('\n') || '  (없음)'}${failedStocks.length > 0 ? `\n❌ 미체결: ${failedStocks.length}종목 (${failedStocks.join(', ')})` : ''}`;
+      log(`${modeTag} === 체결 확인 완료: ${confirmedPositions.length}종목 체결 ===`);
+      sendDiscord(summary).catch(() => {});
+      if (confirmedPositions.length > 0) {
+        emailService.sendBuyReport(confirmedPositions.map(p => ({ ...p, close: p.buyPrice })), 'real', preset.label).catch(() => {});
+      }
+    } catch (e) {
+      log(`${modeTag} ❌ 체결 확인 실패: ${e.message}`, 'error');
+      sendDiscord(`🚨 **[번트]** 실전 매수 체결 확인 실패: ${e.message}\n수동 확인 필요!`).catch(() => {});
+    }
+  }, waitMs);
 }
 
 // ── 거래 비용 (한투 수수료) ───────────────────────────────────
@@ -430,7 +658,7 @@ async function _executeSellPipelineInner(mode = 'paper') {
     }
     const dailyPnl = sellResults.reduce((s, r) => s + r.pnl, 0);
     const buyTotal = sellResults.reduce((s, r) => s + (r.buyPrice * r.qty), 0);
-    const avgPct = sellResults.length > 0 ? +(sellResults.reduce((s, r) => s + (r.pnlPct || 0), 0) / sellResults.length).toFixed(2) : 0;
+    const avgPct = buyTotal > 0 ? +(dailyPnl / buyTotal * 100).toFixed(2) : 0;
     st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: sellResults.length, buyTotal, avgPct });
     if (st.dailyPnl.length > 365) st.dailyPnl = st.dailyPnl.slice(0, 365);
     st.totalPnl += dailyPnl;
@@ -607,7 +835,7 @@ async function checkSellExecutions(sellResults, mode = 'real') {
 
   if (filledCount > 0) {
     const buyTotal = settleDetails.reduce((s, r) => s + (r.buyPrice * r.qty), 0);
-    const avgPct = settleDetails.length > 0 ? +(settleDetails.reduce((s, r) => s + (r.pnlPct || 0), 0) / settleDetails.length).toFixed(2) : 0;
+    const avgPct = buyTotal > 0 ? +(dailyPnl / buyTotal * 100).toFixed(2) : 0;
     st.dailyPnl.unshift({ date: kstNow().toISOString().slice(0, 10), pnl: dailyPnl, stocks: filledCount, buyTotal, avgPct });
     if (st.dailyPnl.length > 365) st.dailyPnl = st.dailyPnl.slice(0, 365);
     st.totalPnl += dailyPnl;
@@ -632,37 +860,63 @@ function isWeekday() {
 
 // ── 크론 스케줄러 (듀얼모드: 모의 항상 + 실전 조건부) ────────
 function setupCron() {
-  const [buyH, buyM] = config.schedule.buyTime.split(':');
+  const [p1H, p1M] = (config.schedule.buyPhase1 || '15:05').split(':');
+  const [p2H, p2M] = (config.schedule.buyPhase2 || '15:21').split(':');
   const [sellH, sellM] = config.schedule.sellTime.split(':');
 
-  // ─ 모의투자 매수 크론 (항상 동작) ─
-  cron.schedule(`${buyM} ${buyH} * * 1-5`, async () => {
-    log('[모의] 매수 크론 트리거됨');
+  // ─ 모의투자 1차 매수 크론 (15:05 정규장 50%) ─
+  cron.schedule(`${p1M} ${p1H} * * 1-5`, async () => {
+    log('[모의] 1차 매수 크론 트리거됨 (정규장 50%)');
     try {
       config = loadConfig();
-      log('[모의] 매수 크론 시작');
-      await executeBuyWithRetry('paper', 3);
+      await executeBuyWithRetry('paper', 3, 1);
     } catch (e) {
-      log(`[모의] 매수 크론 에러: ${e.message}`, 'error');
+      log(`[모의] 1차 매수 크론 에러: ${e.message}`, 'error');
     }
   }, { timezone: 'Asia/Seoul' });
 
-  // ─ 실전투자 매수 크론 (realAutoTrading일 때만) ─
-  // 모의와 시간을 1분 분리하여 동시 실행 충돌 방지
-  const realBuyM = String(Number(buyM) + 1).padStart(2, '0');
-  cron.schedule(`${realBuyM} ${buyH} * * 1-5`, async () => {
-    log('[실전] 매수 크론 트리거됨');
+  // ─ 모의투자 2차 매수 크론 (15:21 동시호가 50%) ─
+  cron.schedule(`${p2M} ${p2H} * * 1-5`, async () => {
+    log('[모의] 2차 매수 크론 트리거됨 (동시호가 50%)');
+    try {
+      config = loadConfig();
+      await executeBuyWithRetry('paper', 3, 2);
+    } catch (e) {
+      log(`[모의] 2차 매수 크론 에러: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // ─ 실전투자 1차 매수 크론 (15:06 정규장 50%, 모의와 1분 분리) ─
+  const realP1M = String(Number(p1M) + 1).padStart(2, '0');
+  cron.schedule(`${realP1M} ${p1H} * * 1-5`, async () => {
+    log('[실전] 1차 매수 크론 트리거됨 (정규장 50%)');
     try {
       config = loadConfig();
       if (!config.realAutoTrading) {
         log('[실전] 자동매매 OFF — 매수 스킵');
         return;
       }
-      log('[실전] 매수 크론 시작');
-      await executeBuyWithRetry('real', 3);
+      await executeBuyWithRetry('real', 3, 1);
     } catch (e) {
-      log(`[실전] 매수 크론 에러: ${e.message}`, 'error');
-      emailService.sendError('[실전] 매수 크론 실패', e.message).catch(() => {});
+      log(`[실전] 1차 매수 크론 에러: ${e.message}`, 'error');
+      emailService.sendError('[실전] 1차 매수 크론 실패', e.message).catch(() => {});
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // ─ 실전투자 2차 매수 크론 (15:22 동시호가 50%, 모의와 1분 분리) ─
+  const realP2M = String(Number(p2M) + 1).padStart(2, '0');
+  cron.schedule(`${realP2M} ${p2H} * * 1-5`, async () => {
+    log('[실전] 2차 매수 크론 트리거됨 (동시호가 50%)');
+    try {
+      config = loadConfig();
+      if (!config.realAutoTrading) {
+        log('[실전] 자동매매 OFF — 매수 스킵');
+        return;
+      }
+      await executeBuyWithRetry('real', 3, 2);
+    } catch (e) {
+      log(`[실전] 2차 매수 크론 에러: ${e.message}`, 'error');
+      emailService.sendError('[실전] 2차 매수 크론 실패', e.message).catch(() => {});
     }
   }, { timezone: 'Asia/Seoul' });
 
@@ -720,6 +974,7 @@ function setupCron() {
   cron.schedule('0 7 * * 1-5', async () => {
     try {
       kisTokenPaper = null; kisTokenReal = null;
+      kisTokenPaperExpires = 0; kisTokenRealExpires = 0;
       await ensureToken('paper');
       log('[모의] KIS 토큰 갱신 완료');
       if (config.realAutoTrading) {
@@ -737,7 +992,142 @@ function setupCron() {
     }
   }, { timezone: 'Asia/Seoul' });
 
-  log(`크론 등록: 모의매수 ${config.schedule.buyTime}, 실전매수 ${buyH}:${realBuyM}, 매도 모의=09:01/실전=${config.schedule.sellTime} (실전: ${config.realAutoTrading ? 'ON' : 'OFF'})`);
+  // ─ 디스코드 알림 ① 매도 전 점검 (08:45) ─
+  cron.schedule('45 8 * * 1-5', async () => {
+    try {
+      config = loadConfig();
+      if (!config.realAutoTrading) return;
+      const st = getState('real');
+      const posCount = (st.positions || []).length;
+      const checks = [];
+
+      // 토큰 실검
+      try {
+        const token = await ensureToken('real');
+        await getCurrentPrice(token, config.appKey, config.appSecret, '005930', 'real');
+        checks.push('✅ KIS 토큰 정상');
+      } catch (e) {
+        checks.push(`❌ KIS 토큰 오류: ${e.message}`);
+      }
+
+      checks.push(posCount > 0 ? `✅ 보유 ${posCount}종목 매도 대기` : '⚪ 보유 종목 없음 (매도 스킵 예정)');
+
+      const hasError = checks.some(c => c.startsWith('❌'));
+      const emoji = hasError ? '🚨' : '✅';
+      await sendDiscord(`${emoji} **[번트 08:45] 실전 매도 전 점검**\n${checks.join('\n')}\n⏰ 08:50 매도 예정`);
+      log('[디스코드] 매도 전 점검 알림 발송');
+    } catch (e) {
+      log(`[디스코드] 매도 전 점검 알림 실패: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // ─ 디스코드 알림 ② 매도 후 결과 (09:05) ─
+  cron.schedule('5 9 * * 1-5', async () => {
+    try {
+      config = loadConfig();
+      if (!config.realAutoTrading) return;
+      const st = getState('real');
+      const remainPos = (st.positions || []).length;
+      const todayPnl = st.dailyPnl && st.dailyPnl.length > 0 ? st.dailyPnl[0] : null;
+      const today = kstNow().toISOString().slice(0, 10);
+
+      let msg;
+      if (todayPnl && todayPnl.date === today) {
+        const pnlSign = todayPnl.pnl >= 0 ? '+' : '';
+        msg = `✅ **[번트 09:05] 실전 매도 완료**\n📊 ${todayPnl.stocks}종목 체결 | ${pnlSign}${Math.round(todayPnl.pnl).toLocaleString()}원\n💰 누적: ${st.totalPnl >= 0 ? '+' : ''}${Math.round(st.totalPnl).toLocaleString()}원`;
+      } else if (remainPos > 0) {
+        msg = `🚨 **[번트 09:05] 실전 매도 미체결 경고!**\n⚠️ ${remainPos}종목 미체결 — 수동 확인 필요!\n${st.positions.map(p => `  - ${p.name}(${p.code}) ${p.qty}주`).join('\n')}`;
+      } else {
+        msg = `⚪ **[번트 09:05]** 보유 종목 없었음 (매도 없음)`;
+      }
+      await sendDiscord(msg);
+      log('[디스코드] 매도 후 결과 알림 발송');
+    } catch (e) {
+      log(`[디스코드] 매도 후 결과 알림 실패: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // ─ 디스코드 알림 ③ 매수 전 점검 (15:03, 1차 매수 2분 전) ─
+  cron.schedule('3 15 * * 1-5', async () => {
+    try {
+      config = loadConfig();
+      if (!config.realAutoTrading) return;
+      const st = getState('real');
+      const checks = [];
+
+      // 토큰 실검
+      try {
+        const token = await ensureToken('real');
+        await getCurrentPrice(token, config.appKey, config.appSecret, '005930', 'real');
+        checks.push('✅ KIS 토큰 정상');
+      } catch (e) {
+        checks.push(`❌ KIS 토큰 오류: ${e.message}`);
+      }
+
+      // 예수금 조회
+      try {
+        const token = await ensureToken('real');
+        const bal = await getBalance(token, config.appKey, config.appSecret, config.cano, 'real');
+        checks.push(`✅ 예수금: ${bal.deposit.toLocaleString()}원`);
+      } catch (e) {
+        checks.push(`❌ 예수금 조회 실패: ${e.message}`);
+      }
+
+      // 스캔 결과
+      const scan = st.lastScanResult;
+      if (scan && scan.selected && scan.selected.length > 0) {
+        checks.push(`✅ 스캔: ${scan.selected.length}종목 선정됨`);
+      } else {
+        checks.push('⚠️ 스캔 결과 없음 (15:25에 재스캔 예정)');
+      }
+
+      // 보유 종목 확인
+      const posCount = (st.positions || []).length;
+      if (posCount > 0) {
+        checks.push(`⚠️ 보유 ${posCount}종목 있음 (매수 시 덮어쓰기 주의)`);
+      }
+
+      const hasError = checks.some(c => c.startsWith('❌'));
+      const emoji = hasError ? '🚨' : '✅';
+      await sendDiscord(`${emoji} **[번트 15:03] 실전 매수 전 점검**\n${checks.join('\n')}\n⏰ 15:06 1차(정규장 50%) → 15:22 2차(동시호가 50%)`);
+      log('[디스코드] 매수 전 점검 알림 발송');
+    } catch (e) {
+      log(`[디스코드] 매수 전 점검 알림 실패: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  // ─ 디스코드 알림 ④ 매수 후 결과 (15:28) ─
+  cron.schedule('28 15 * * 1-5', async () => {
+    try {
+      config = loadConfig();
+      if (!config.realAutoTrading) return;
+      const st = getState('real');
+      const posCount = (st.positions || []).length;
+      const today = kstNow().toISOString().slice(0, 10);
+
+      if (posCount > 0 && st.lastBuy && st.lastBuy.startsWith(today)) {
+        const totalAmt = st.positions.reduce((s, p) => s + (p.buyPrice * p.qty), 0);
+        const msg = `✅ **[번트 15:28] 실전 매수 완료**\n📊 ${posCount}종목 매수 | 총 ${totalAmt.toLocaleString()}원\n${st.positions.map(p => `  - ${p.name} ${p.qty}주 × ${p.buyPrice.toLocaleString()}원`).join('\n')}`;
+        await sendDiscord(msg);
+      } else {
+        // 주문 로그에서 실패 확인
+        const orderLog = getOrderLog('real');
+        const todayFails = orderLog.filter(o => o.timestamp && o.timestamp.startsWith(today) && !o.success);
+        if (todayFails.length > 0) {
+          await sendDiscord(`🚨 **[번트 15:28] 실전 매수 실패!**\n❌ ${todayFails.length}건 실패\n${todayFails.slice(0, 5).map(o => `  - ${o.code}: ${o.msg}`).join('\n')}`);
+        } else {
+          await sendDiscord(`⚪ **[번트 15:28]** 매수 대상 없었음 (필터 통과 종목 없음)`);
+        }
+      }
+      log('[디스코드] 매수 후 결과 알림 발송');
+    } catch (e) {
+      log(`[디스코드] 매수 후 결과 알림 실패: ${e.message}`, 'error');
+    }
+  }, { timezone: 'Asia/Seoul' });
+
+  log(`크론 등록: 분할매수 — 모의 1차=${p1H}:${p1M}/2차=${p2H}:${p2M}, 실전 1차=${p1H}:${realP1M}/2차=${p2H}:${realP2M}`);
+  log(`크론 등록: 매도 모의=09:01/실전=${config.schedule.sellTime} (실전: ${config.realAutoTrading ? 'ON' : 'OFF'})`);
+  log(`크론 등록: 디스코드 알림 08:45/09:05/15:03/15:28`);
   log(`크론 등록: 네트워크 에러 시 최대 3회 재시도 (10초 간격 증가)`);
 }
 
@@ -773,6 +1163,7 @@ app.get('/api/status', (req, res) => {
       stocks: Array.isArray(lastScanResult.selected) ? lastScanResult.selected : (lastScanResult.stocks || []),
     } : null,
     schedule: config.schedule,
+    pendingPhase2: st.pendingPhase2 ? { date: st.pendingPhase2.date, stocks: st.pendingPhase2.stocks.length, totalAlloc: st.pendingPhase2.totalAlloc } : null,
     viewMode: mode,
     realAutoTrading: config.realAutoTrading || false,
   });
@@ -900,14 +1291,15 @@ app.post('/api/scan', async (req, res) => {
   }
 });
 
-// 수동 매수 (현재 viewMode 기준)
+// 수동 매수 (현재 viewMode 기준, phase=1 스캔+50%, phase=2 나머지 50%)
 app.post('/api/buy', async (req, res) => {
   try {
     config = loadConfig();
     const mode = config.viewMode || 'paper';
-    await executeBuyPipeline(mode);
+    const phase = parseInt(req.body.phase) || 1;
+    await executeBuyPipeline(mode, phase);
     const st = getState(mode);
-    res.json({ ok: true, positions: st.positions });
+    res.json({ ok: true, positions: st.positions, phase });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

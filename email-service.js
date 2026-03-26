@@ -37,7 +37,7 @@ async function send(subject, html) {
 // ── 매수 결과 이메일 ─────────────────────────────────────────
 async function sendBuyReport(stocks, mode, presetLabel) {
   if (!isReady() || stocks.length === 0) return;
-  const modeTag = mode === 'real' ? '🔴 실전' : '🟢 모의';
+  const modeTag = mode === 'real' ? '실전' : '모의';
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
   const totalAmt = stocks.reduce((s, t) => s + t.qty * t.close, 0);
 
@@ -78,7 +78,7 @@ async function sendBuyReport(stocks, mode, presetLabel) {
 // ── 매도/정산 결과 이메일 ────────────────────────────────────
 async function sendSellReport(results, dailyPnl, mode, presetLabel) {
   if (!isReady() || results.length === 0) return;
-  const modeTag = mode === 'real' ? '🔴 실전' : '🟢 모의';
+  const modeTag = mode === 'real' ? '실전' : '모의';
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
   const rows = results.map(r => {
@@ -127,7 +127,7 @@ async function sendSellReport(results, dailyPnl, mode, presetLabel) {
 async function sendError(title, detail) {
   const html = `
     <div style="font-family:monospace;padding:20px;background:#1a1a2e;color:#ff6b6b;">
-      <h2>🚨 ${title}</h2>
+      <h2>${title}</h2>
       <pre style="color:#fff;background:#16213e;padding:15px;border-radius:8px;">${detail}</pre>
       <p style="color:#888;">${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
     </div>`;

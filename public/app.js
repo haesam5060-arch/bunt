@@ -42,7 +42,7 @@ async function toggleDailyDetail(row, date) {
     html += `<tr><td>${s.name}</td><td>${qty}</td><td>${(s.buyPrice || 0).toLocaleString()}</td><td>${(s.sellPrice || 0).toLocaleString()}</td><td>${buyAmt.toLocaleString()}원</td><td class="${pnlClass}">${(s.pnlPct || 0) > 0 ? '+' : ''}${(s.pnlPct || 0).toFixed(2)}%</td><td class="${pnlClass}">${(s.pnl || 0) > 0 ? '+' : ''}${Math.round(s.pnl || 0).toLocaleString()}원</td></tr>`;
   }
   const totalPnlClass = totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-  const avgPct = sells.length > 0 ? (sells.reduce((s,t) => s + (t.pnlPct || 0), 0) / sells.length).toFixed(2) : '0.00';
+  const avgPct = totalBuyAmt > 0 ? (totalPnl / totalBuyAmt * 100).toFixed(2) : '0.00';
   html += `<tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td>${sells.reduce((s,t)=>s+(t.qty||0),0)}</td><td></td><td></td><td>${totalBuyAmt.toLocaleString()}원</td><td class="${totalPnlClass}">${avgPct > 0 ? '+' : ''}${avgPct}%</td><td class="${totalPnlClass}">${totalPnl > 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}원</td></tr>`;
 
   html += '</table></div></td>';
@@ -197,7 +197,7 @@ async function refreshStatus() {
     const seed = data.initialCapital || 1000000;
     pnlBody.innerHTML = dailyPnl.map((p, i) => {
       const cum = cumPnls[i];
-      const dayPct = p.avgPct != null ? (+p.avgPct).toFixed(2) : (p.buyTotal ? (p.pnl / p.buyTotal * 100).toFixed(2) : (p.pnl / seed * 100).toFixed(2));
+      const dayPct = p.buyTotal ? (p.pnl / p.buyTotal * 100).toFixed(2) : (p.pnl / seed * 100).toFixed(2);
       const cumPct = (cum / seed * 100).toFixed(2);
       return `
       <tr class="pnl-row" data-date="${p.date}" style="cursor:pointer;" onclick="toggleDailyDetail(this, '${p.date}')">

@@ -126,6 +126,9 @@ function applyFilter(stocks, details, preset) {
     // 관리종목/정리매매 제외
     if (blacklistSet.has(s.code)) continue;
 
+    // 고정 상한가 제외 (시가=고가=종가 → 종일 상한가 고정, 실전 체결 불가)
+    if (d.open === d.high && d.high === d.close && d.open === d.close) continue;
+
     // 등락률 필터
     if (preset.minChangeRate != null && s.changeRate < preset.minChangeRate) continue;
 
