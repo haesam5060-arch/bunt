@@ -25,11 +25,20 @@ async function toggleDailyDetail(row, date) {
     return;
   }
 
-  const sells = trades.filter(t => t.action === 'SELL');
+  // SELL 레코드에 pnl이 있으면 사용 (모의), 없으면 SETTLE에서 가져옴 (실전)
+  let sells = trades.filter(t => t.action === 'SELL' && t.sellPrice != null);
+  if (sells.length === 0) {
+    sells = trades.filter(t => t.action === 'SETTLE');
+  }
   if (sells.length === 0) return;
 
+  // BUY 레코드에서 등락률 매칭
+  const buys = trades.filter(t => t.action === 'BUY');
+  const buyMap = {};
+  for (const b of buys) buyMap[b.code] = b.changeRate || 0;
+
   let html = '<td colspan="7"><div class="daily-detail"><table class="detail-table">';
-  html += '<tr><th>종목</th><th>수량</th><th>매수가</th><th>매도가</th><th>매수금액</th><th>수익률</th><th>손익</th></tr>';
+  html += '<tr><th>종목</th><th>등락률</th><th>수량</th><th>매수가</th><th>매도가</th><th>매수금액</th><th>수익률</th><th>손익</th></tr>';
   let totalPnl = 0, totalBuyAmt = 0, totalSellAmt = 0;
   for (const s of sells) {
     const pnlClass = (s.pnl || 0) >= 0 ? 'pnl-pos' : 'pnl-neg';
@@ -39,11 +48,13 @@ async function toggleDailyDetail(row, date) {
     totalPnl += (s.pnl || 0);
     totalBuyAmt += buyAmt;
     totalSellAmt += sellAmt;
-    html += `<tr><td>${s.name}</td><td>${qty}</td><td>${(s.buyPrice || 0).toLocaleString()}</td><td>${(s.sellPrice || 0).toLocaleString()}</td><td>${buyAmt.toLocaleString()}원</td><td class="${pnlClass}">${(s.pnlPct || 0) > 0 ? '+' : ''}${(s.pnlPct || 0).toFixed(2)}%</td><td class="${pnlClass}">${(s.pnl || 0) > 0 ? '+' : ''}${Math.round(s.pnl || 0).toLocaleString()}원</td></tr>`;
+    const cr = buyMap[s.code] || s.changeRate || 0;
+    const crStr = cr ? `+${(cr * 100).toFixed(1)}%` : '-';
+    html += `<tr><td>${s.name}</td><td class="pnl-pos" style="font-size:11px;">${crStr}</td><td>${qty}</td><td>${(s.buyPrice || 0).toLocaleString()}</td><td>${(s.sellPrice || 0).toLocaleString()}</td><td>${buyAmt.toLocaleString()}원</td><td class="${pnlClass}">${(s.pnlPct || 0) > 0 ? '+' : ''}${(s.pnlPct || 0).toFixed(2)}%</td><td class="${pnlClass}">${(s.pnl || 0) > 0 ? '+' : ''}${Math.round(s.pnl || 0).toLocaleString()}원</td></tr>`;
   }
   const totalPnlClass = totalPnl >= 0 ? 'pnl-pos' : 'pnl-neg';
   const avgPct = totalBuyAmt > 0 ? (totalPnl / totalBuyAmt * 100).toFixed(2) : '0.00';
-  html += `<tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td>${sells.reduce((s,t)=>s+(t.qty||0),0)}</td><td></td><td></td><td>${totalBuyAmt.toLocaleString()}원</td><td class="${totalPnlClass}">${avgPct > 0 ? '+' : ''}${avgPct}%</td><td class="${totalPnlClass}">${totalPnl > 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}원</td></tr>`;
+  html += `<tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td></td><td>${sells.reduce((s,t)=>s+(t.qty||0),0)}</td><td></td><td></td><td>${totalBuyAmt.toLocaleString()}원</td><td class="${totalPnlClass}">${avgPct > 0 ? '+' : ''}${avgPct}%</td><td class="${totalPnlClass}">${totalPnl > 0 ? '+' : ''}${Math.round(totalPnl).toLocaleString()}원</td></tr>`;
 
   html += '</table></div></td>';
   const detailRow = document.createElement('tr');

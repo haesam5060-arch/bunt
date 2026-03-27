@@ -1,6 +1,53 @@
 // ═══════════════════════════════════════════════════════════════
-// 번트(BUNT) — 코스닥 오버나잇 자동매매 엔진
-// 전략: 장마감 10분전 코스닥 스캔 → 필터 → 매수 → 익일 시가 매도
+// 번트(BUNT) 오버나잇 엔진 v2.0
+// ═══════════════════════════════════════════════════════════════
+//
+// ── 전략 ──
+// 전일 장마감 직전 상한가 종목 매수 → 다음날 장 시작 시가 매도 (오버나잇 갭업)
+//
+// ── 파이프라인 ──
+//
+// [1단계] 종목 스캔 (15:15~15:20)
+//   - 네이버 모바일 API로 코스닥 전종목(~1,820개) 등락률 조회
+//   - 등락률 상위 30종목 → 개별 OHLCV 상세 조회
+//
+// [2단계] 필터링 (7단계 순차)
+//   ① 신규상장 제외     : 등락률 > 30% (가격제한폭 밖)
+//   ② 관리종목 제외     : 블랙리스트 (거래소 관리종목/정리매매)
+//   ③ 고정 상한가 제외  : 시가=고가=종가 (종일 고정, 체결 불가)
+//   ④ 등락률 필터       : ≥ 29% (상한가 근접)
+//   ⑤ 종가=고가 필터    : 종가/고가 = 100% (장마감까지 매수세 유지)
+//   ⑥ 연속 재진입 필터  : 전일 매수 종목 제외 (같은 종목 연속 매수 방지)
+//   ⑦ DART 악재 필터    : 연속적자(3기중 2기+) / 악재공시(90일) 종목 차단
+//   → 최대 10종목 선정 (등락률 내림차순)
+//
+// [3단계] 분할 매수 (50/50)
+//   1차: 모의 15:05 / 실전 15:06 — 정규장 시장가 (50%)
+//   2차: 모의 15:21 / 실전 15:22 — 장마감 동시호가 (50%)
+//
+// [4단계] 오버나잇 보유
+//
+// [5단계] 매도 (다음날)
+//   실전: 08:50 시장가 주문 → 09:00 동시호가(시가)에 체결
+//   모의: 09:01 KIS API 시가(open) 조회 → 시가로 정산
+//         매수가도 전일 종가(prevClose)로 보정 (스캔→종가 괴리 해소)
+//   → 모의/실전 수익률 괴리 0%p
+//
+// [6단계] 정산
+//   비용: 수수료 0% (국내수수료우대) + 매도세 0.20% = 왕복 0.20%
+//
+// ── 타임라인 ──
+//  07:00  블랙리스트 갱신
+//  08:50  [실전] 매도 시장가 주문
+//  09:00  장 시작 (동시호가 체결)
+//  09:01  [모의] 매도 — 시가 정산
+//  15:05  [모의] 스캔 + 1차 매수 (정규장 50%)
+//  15:06  [실전] 스캔 + 1차 매수 (정규장 50%)
+//  15:21  [모의] 2차 매수 (동시호가 50%, 1차 선정 종목)
+//  15:22  [실전] 2차 매수 (동시호가 50%, 1차 선정 종목)
+//  15:30  장마감
+//  15:32  체결확인 — 실제 체결가로 포지션 보정
+//
 // ═══════════════════════════════════════════════════════════════
 const express = require('express');
 const fs      = require('fs');
@@ -587,16 +634,19 @@ function _scheduleSettlementCheck(mode, st, phase2BuyResults, preset, isMerge = 
   }, waitMs);
 }
 
-// ── 거래 비용 (한투 수수료) ───────────────────────────────────
-const COMMISSION_RATE = 0.005;   // 편도 0.5% (한투 50만원 기준)
-const SELL_TAX_RATE   = 0.0018;  // 매도세 0.18% (코스닥)
+// ── 거래 비용 (한투 국내수수료우대 계좌) ─────────────────────
+const COMMISSION_RATE = 0;       // 수수료 0% (국내수수료우대)
+const SELL_TAX_RATE   = 0.002;   // 매도세 0.20% (코스닥, 증권거래세)
 
 function calcNetPnl(buyPrice, sellPrice, qty) {
   const buyCost  = buyPrice * qty * COMMISSION_RATE;   // 매수 수수료
   const sellCost = sellPrice * qty * COMMISSION_RATE;  // 매도 수수료
   const sellTax  = sellPrice * qty * SELL_TAX_RATE;    // 매도세
   const grossPnl = (sellPrice - buyPrice) * qty;
-  return { pnl: Math.round(grossPnl - buyCost - sellCost - sellTax), pnlPct: buyPrice > 0 ? (sellPrice - buyPrice) / buyPrice - COMMISSION_RATE * 2 - SELL_TAX_RATE : 0 };
+  const totalCost = buyCost + sellCost + sellTax;
+  const pnl = Math.round(grossPnl - totalCost);
+  const pnlPct = buyPrice > 0 ? (pnl / (buyPrice * qty)) : 0;
+  return { pnl, pnlPct };
 }
 
 // ── 핵심 로직: 익일 시가 매도 ────────────────────────────────
@@ -630,6 +680,7 @@ async function _executeSellPipelineInner(mode = 'paper') {
   log(`${modeTag} === 매도 파이프라인 시작 (${st.positions.length}종목) ===`);
 
   if (mode === 'paper') {
+    // 모의 매도: 시가(open) 정산 — 실전 시장가 주문은 시가에 체결되므로 동일하게 시뮬레이션
     const sellResults = [];
     for (const pos of st.positions) {
       try {
@@ -645,11 +696,17 @@ async function _executeSellPipelineInner(mode = 'paper') {
             cur = await getCurrentPrice(token, config.appKey, config.appSecret, pos.code, 'paper');
           } else { throw te; }
         }
-        const sellPrice = cur.price || pos.buyPrice;
-        const { pnl, pnlPct } = calcNetPnl(pos.buyPrice, sellPrice, pos.qty);
-        log(`${modeTag} ✅ 매도: ${pos.name}(${pos.code}) ${pos.qty}주 — 매수 ${pos.buyPrice.toLocaleString()} → 매도 ${sellPrice.toLocaleString()} (${(pnlPct * 100).toFixed(2)}%, ${pnl > 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}원)`);
-        appendTradeLog({ action: 'SELL', code: pos.code, name: pos.name, qty: pos.qty, buyPrice: pos.buyPrice, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2), preset: config.preset }, mode);
-        sellResults.push({ ...pos, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2) });
+        // 시가(open) 우선 사용 → 없으면 현재가 fallback
+        const sellPrice = cur.open || cur.price || pos.buyPrice;
+        // 매수가도 전일 종가로 보정 (스캔 시점 가격 vs 실제 장마감 종가 괴리 해소)
+        const adjustedBuyPrice = cur.prevClose || pos.buyPrice;
+        if (adjustedBuyPrice !== pos.buyPrice) {
+          log(`${modeTag} 📊 매수가 보정: ${pos.name}(${pos.code}) ${pos.buyPrice.toLocaleString()} → ${adjustedBuyPrice.toLocaleString()}원 (전일 종가)`);
+        }
+        const { pnl, pnlPct } = calcNetPnl(adjustedBuyPrice, sellPrice, pos.qty);
+        log(`${modeTag} ✅ 매도: ${pos.name}(${pos.code}) ${pos.qty}주 — 매수 ${adjustedBuyPrice.toLocaleString()} → 매도(시가) ${sellPrice.toLocaleString()} (${(pnlPct * 100).toFixed(2)}%, ${pnl > 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}원)`);
+        appendTradeLog({ action: 'SELL', code: pos.code, name: pos.name, qty: pos.qty, buyPrice: adjustedBuyPrice, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2), preset: config.preset }, mode);
+        sellResults.push({ ...pos, buyPrice: adjustedBuyPrice, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2) });
         await sleep(250);
       } catch (e) {
         log(`${modeTag} ❌ 매도 현재가 조회 실패: ${pos.name}(${pos.code}) — ${e.message}`, 'error');
@@ -811,6 +868,12 @@ async function checkSellExecutions(sellResults, mode = 'real') {
     }
   }
 
+  // API output2: 실제 수수료/세금 합계 (실전 모드에서 사용)
+  const apiSummary = orders._summary || {};
+  if (mode === 'real' && apiSummary._raw) {
+    log(`${modeTag} 💰 API 정산: 매도금액 ${apiSummary.sellAmt.toLocaleString()} | 수수료 ${apiSummary.sellFee.toLocaleString()} | 세금 ${apiSummary.sellTax.toLocaleString()} | 정산 ${apiSummary.sellSettleAmt.toLocaleString()}`);
+  }
+
   let dailyPnl = 0;
   let filledCount = 0;
   let pendingCount = 0;
@@ -821,11 +884,33 @@ async function checkSellExecutions(sellResults, mode = 'real') {
     if (filled) {
       filledCount++;
       const sellPrice = filled.avgPrice || filled.ordPrice;
-      const net = calcNetPnl(pos.buyPrice, sellPrice, pos.qty);
-      dailyPnl += net.pnl;
-      log(`${modeTag} 📊 ${pos.name}: 매수 ${pos.buyPrice.toLocaleString()} → 매도 ${sellPrice.toLocaleString()} (${(net.pnlPct * 100).toFixed(2)}%, ${net.pnl > 0 ? '+' : ''}${Math.round(net.pnl).toLocaleString()}원)`);
-      appendTradeLog({ action: 'SETTLE', code: pos.code, name: pos.name, buyPrice: pos.buyPrice, sellPrice, qty: pos.qty, pnl: net.pnl, pnlPct: +(net.pnlPct * 100).toFixed(2) }, mode);
-      settleDetails.push({ ...pos, sellPrice, pnl: net.pnl, pnlPct: +(net.pnlPct * 100).toFixed(2) });
+      const sellAmt = filled.filledAmt || (sellPrice * pos.qty);
+      const buyAmt = pos.buyPrice * pos.qty;
+
+      let pnl, pnlPct;
+      if (mode === 'real' && filledCount === sellResults.length && apiSummary.sellAmt > 0) {
+        // 실전: API의 실제 수수료/세금으로 계산
+        const totalFee = apiSummary.sellFee + apiSummary.buyFee;
+        const totalTax = apiSummary.sellTax;
+        const grossPnl = sellAmt - buyAmt;
+        // 종목 비율로 수수료/세금 배분 (여러 종목 매도 시)
+        const ratio = sellAmt / (apiSummary.sellAmt || sellAmt);
+        const allocFee = Math.round(totalFee * ratio);
+        const allocTax = Math.round(totalTax * ratio);
+        pnl = Math.round(grossPnl - allocFee - allocTax);
+        pnlPct = buyAmt > 0 ? pnl / buyAmt : 0;
+        log(`${modeTag} 📊 ${pos.name}: 매수 ${pos.buyPrice.toLocaleString()} → 매도 ${sellPrice.toLocaleString()} | 수수료 ${allocFee}원 + 세금 ${allocTax}원 | ${(pnlPct * 100).toFixed(2)}% (${pnl > 0 ? '+' : ''}${pnl.toLocaleString()}원)`);
+      } else {
+        // 모의 또는 API 비용 없을 때: 수수료율로 계산
+        const net = calcNetPnl(pos.buyPrice, sellPrice, pos.qty);
+        pnl = net.pnl;
+        pnlPct = net.pnlPct;
+        log(`${modeTag} 📊 ${pos.name}: 매수 ${pos.buyPrice.toLocaleString()} → 매도 ${sellPrice.toLocaleString()} (${(pnlPct * 100).toFixed(2)}%, ${pnl > 0 ? '+' : ''}${Math.round(pnl).toLocaleString()}원)`);
+      }
+
+      dailyPnl += pnl;
+      appendTradeLog({ action: 'SETTLE', code: pos.code, name: pos.name, buyPrice: pos.buyPrice, sellPrice, qty: pos.qty, pnl, pnlPct: +(pnlPct * 100).toFixed(2), fee: apiSummary.sellFee || 0, tax: apiSummary.sellTax || 0 }, mode);
+      settleDetails.push({ ...pos, sellPrice, pnl, pnlPct: +(pnlPct * 100).toFixed(2) });
     } else {
       pendingCount++;
       log(`${modeTag} ⏳ ${pos.name}(${pos.code}): 아직 미체결`, 'warn');
@@ -1179,13 +1264,25 @@ app.get('/api/trades', (req, res) => {
   const logs = loadTradeLog(config.viewMode || 'paper');
   const date = req.query.date;
   if (date) {
-    const filtered = logs.filter(t => t.timestamp && t.timestamp.startsWith(date.replace(/-/g, '-')));
     // KST 기준으로 필터 (UTC+9)
     const byDate = logs.filter(t => {
       if (!t.timestamp) return false;
       const kst = new Date(new Date(t.timestamp).getTime() + 9 * 3600000);
       return kst.toISOString().slice(0, 10) === date;
     });
+    // 매도 종목의 BUY 레코드도 포함 (등락률 표시용)
+    const sellCodes = new Set(byDate.filter(t => t.action === 'SELL' || t.action === 'SETTLE').map(t => t.code));
+    if (sellCodes.size > 0) {
+      const buys = logs.filter(t => t.action === 'BUY' && sellCodes.has(t.code) && !byDate.includes(t));
+      // 각 종목의 가장 최근 BUY만 추가
+      const addedCodes = new Set();
+      for (const b of buys) {
+        if (!addedCodes.has(b.code)) {
+          byDate.push(b);
+          addedCodes.add(b.code);
+        }
+      }
+    }
     return res.json(byDate);
   }
   const limit = parseInt(req.query.limit) || 50;

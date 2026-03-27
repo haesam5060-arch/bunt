@@ -236,7 +236,8 @@ async function getOrders(token, appKey, appSecret, cano, { startDate, endDate } 
     { token, appKey, appSecret, trId: trIds.orders, tradingMode }
   );
   if (result.rt_cd !== '0') throw new Error(result.msg1 || '체결 내역 조회 실패');
-  return (result.output1 || []).map(o => ({
+
+  const orders = (result.output1 || []).map(o => ({
     ordNo:     o.odno,
     code:      o.pdno,
     name:      o.prdt_name,
@@ -245,9 +246,25 @@ async function getOrders(token, appKey, appSecret, cano, { startDate, endDate } 
     filledQty: parseInt(o.tot_ccld_qty) || 0,
     ordPrice:  parseInt(o.ord_unpr) || 0,
     avgPrice:  parseInt(o.avg_prvs) || 0,
+    filledAmt: parseInt(o.tot_ccld_amt) || 0,   // 총체결금액
     ordTime:   o.ord_tmd,
     status:    parseInt(o.tot_ccld_qty) > 0 ? 'FILLED' : 'PENDING',
   }));
+
+  // output2: 매도/매수 합산 수수료·세금·정산 (일별 합계)
+  const s = result.output2 || {};
+  const summary = {
+    sellAmt:        parseInt(s.tot_sll_amt) || 0,       // 매도금액합계
+    sellFee:        parseInt(s.sll_fee_smtl) || 0,      // 매도수수료합계
+    sellTax:        parseInt(s.sll_tax_smtl) || 0,      // 매도제세금합계
+    sellSettleAmt:  parseInt(s.sll_stlm_amt) || 0,      // 매도정산금액합계
+    buyAmt:         parseInt(s.tot_buy_amt) || 0,       // 매수금액합계
+    buyFee:         parseInt(s.buy_fee_smtl) || 0,      // 매수수수료합계
+    _raw: s,  // 디버깅용 원본 (필드명 확인)
+  };
+
+  orders._summary = summary;
+  return orders;
 }
 
 // ── 현재가 조회 (주문 전 실시간 가격 확인용) ─────────────────
@@ -263,6 +280,8 @@ async function getCurrentPrice(token, appKey, appSecret, code, tradingMode = 'pa
   return {
     code,
     price:      parseInt(o.stck_prpr) || 0,
+    open:       parseInt(o.stck_oprc) || 0,
+    prevClose:  parseInt(o.stck_sdpr) || 0,
     changeRate: parseFloat(o.prdy_ctrt) / 100 || 0,
     volume:     parseInt(o.acml_vol) || 0,
     high:       parseInt(o.stck_hgpr) || 0,

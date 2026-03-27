@@ -341,141 +341,174 @@
       <button class="btn" id="btnBuy" onclick="manualBuy(this)">수동 매수</button>
       <button class="btn danger" id="btnSell" onclick="manualSell(this)">수동 매도</button>
       <button class="btn" onclick="refreshAll()">새로고침</button>
-      <button class="btn" onclick="toggleInfo()" style="margin-left:auto">엔진 로직</button>
+      <button class="btn" onclick="toggleInfo()" style="margin-left:auto">엔진 로직 설명</button>
     </div>
 
-    <!-- 엔진 로직 인포 패널 -->
+    <!-- 엔진 로직 설명 인포 패널 -->
     <div id="infoPanel" style="display:none; margin-bottom:20px;">
       <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:24px; font-size:13px; line-height:1.8;">
 
         <!-- 1. 엔진 소개 -->
-        <div style="font-size:16px; font-weight:700; margin-bottom:8px; color:var(--accent);">번트(BUNT)란?</div>
+        <div style="font-size:16px; font-weight:700; margin-bottom:8px; color:var(--accent);">번트(BUNT) 오버나잇 엔진 v2.0</div>
         <div style="color:var(--text); margin-bottom:20px; padding:16px; background:rgba(255,255,255,0.03); border-radius:8px; border-left:3px solid var(--accent);">
-          <div style="font-size:14px; font-weight:600; margin-bottom:8px;">오늘 폭등한 종목을 장 마감에 사서, 내일 아침에 파는 자동매매 엔진</div>
+          <div style="font-size:14px; font-weight:600; margin-bottom:8px;">오늘 상한가 종목을 장 마감에 사서, 내일 아침 시가에 파는 자동매매 엔진</div>
           <div style="color:var(--dim); line-height:1.9;">
-            주식이 하루에 +20% 이상 폭등하면, 뉴스와 SNS를 타고 관심이 퍼집니다.<br>
+            주식이 하루에 +29% 이상(상한가 근접) 폭등하면, 뉴스와 SNS를 타고 관심이 퍼집니다.<br>
             "나도 내일 사야지!" 하는 사람들이 밤새 쌓이고,<br>
             다음날 아침 장이 열리면 매수 주문이 몰리면서 <strong style="color:var(--text);">시가가 어제 종가보다 높게</strong> 형성됩니다.<br>
             이 <strong style="color:var(--accent);">오버나잇 갭(하룻밤 사이 가격 상승)</strong>을 매일 자동으로 반복 수확하는 것이 번트의 원리입니다.<br><br>
-            사람이 하면 하루 1~2종목, 감정에 흔들려 손절 못 하고, 피곤한 날은 쉬게 됩니다.<br>
             번트는 <strong style="color:var(--text);">감정 없이 매일 자동으로 양의 기대값 게임을 반복</strong>합니다. 카지노의 하우스 엣지와 같은 원리입니다.
           </div>
         </div>
 
-        <!-- 2. 종목 선별 프로세스 -->
-        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">종목 선별 프로세스</div>
+        <!-- 2. 전체 파이프라인 -->
+        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">매매 파이프라인</div>
         <pre style="color:var(--text); white-space:pre-wrap; font-family:inherit; margin-bottom:20px;">
-15:15  코스닥 전종목 스캔 (1,818종목, 0.3초)
-  │    네이버 모바일 API 19페이지 병렬 호출
+<strong style="color:var(--accent);">[1단계] 종목 스캔</strong> (1차 매수 크론 시작 시 자동 실행)
+  │  네이버 모바일 API → 코스닥 전종목 (~1,820개) 등락률 조회
+  │  등락률 상위 30종목 → 개별 OHLCV 상세 조회
   ▼
-  ① 등락률 ≥ 20%
-  │    전일 종가 대비 오늘 +20% 이상 오른 종목만
-  │    → "폭등한 종목"만 선별
-  ▼
-  ② 종가 = 고가 (100%)
-  │    장 마감 시점에 당일 최고가로 마감한 종목만
-  │    → 끝까지 팔리지 않고 강한 종목 = 내일도 갈 확률 높음
-  ▼
-  ③ 갭업 ≥ 0%
-  │    오늘 시가가 전일 종가 이상으로 출발한 종목만
-  │    → 아침부터 사려는 사람이 많았다는 증거
-  ▼
-  통과 종목 전부 매수 (보통 4~8개, 최대 10개)
-  │    예수금 ÷ 종목수 = 균등 배분
+<strong style="color:var(--accent);">[2단계] 7단계 필터링</strong>
   │
-15:25  KIS API 시장가 매수 주문 → 15:30 동시호가 종가 체결
+  │  ① 신규상장 제외    등락률 > 30% (가격제한폭 밖)
+  │  ② 관리종목 제외    거래소 관리종목/정리매매 블랙리스트
+  │  ③ 고정 상한가 제외  시가=고가=종가 (종일 고정, 체결 불가)
+  │  ④ 등락률 필터      <strong style="color:var(--green);">≥ 29%</strong> (상한가 근접만)
+  │  ⑤ 종가=고가 필터   <strong style="color:var(--green);">종가/고가 = 100%</strong> (장마감까지 매수세 유지)
+  │  ⑥ 연속 재진입 필터  전일 매수 종목 제외
+  │  ⑦ <strong style="color:var(--accent);">DART 악재 필터</strong>  연속적자(3기중 2기+) / 악재공시(90일) 차단
   │
-  ▼  ── 하룻밤 보유 ──
-  │    사람들이 "내일 사야지!" 하는 동안 기다림
-  │
-08:50  KIS API 시장가 매도 → 09:00 시가 체결
-  │    → 밤새 쌓인 매수세 덕분에 시가 > 종가 = 수익
-  │    실패 시 09:01 재시도, 09:10 최종 손절
+  │  → 최대 10종목 선정 (등락률 내림차순)
   ▼
-  끝. 매일 저녁 자동 반복. 감정 개입 제로.</pre>
+<strong style="color:var(--accent);">[3단계] 분할 매수</strong> (50/50)
+  │
+  │  1차 15:05~06  스캔 → 필터 → 정규장 시장가 주문 (50%)
+  │  2차 15:21~22  1차 선정 종목 장마감 동시호가 주문 (50%)
+  │  예수금 ÷ 종목수 = 균등 배분
+  ▼
+<strong style="color:var(--accent);">[4단계] 오버나잇 보유</strong>
+  │  사람들이 "내일 사야지!" 하는 동안 기다림
+  ▼
+<strong style="color:var(--accent);">[5단계] 익일 매도</strong>
+  │
+  │  실전: 08:50 시장가 주문 → 09:00 동시호가(시가) 체결
+  │  모의: 09:01 시가(open) 조회 → 시가로 정산
+  │  → 밤새 쌓인 매수세로 시가 > 종가 = 수익
+  │
+  │  매도 안전장치 (실전):
+  │  실패 시 즉시 재시도(2회)
+  │  → 프로그레시브 리트라이 (30초~10분, 5단계)
+  │  → 최종 실패 시 이메일 알림
+  ▼
+<strong style="color:var(--accent);">[6단계] 정산</strong>
+  수수료 0% (국내수수료우대) + 매도세 0.20%
+  = <strong>왕복 0.20%</strong> (실전: KIS API에서 실제 비용 자동 조회)
+  끝. 매일 저녁 자동 반복.</pre>
 
-        <!-- 3. 백테스트 결과 -->
-        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">1년 백테스트 결과 (2025.03 ~ 2026.03)</div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:16px;">
+        <!-- 3. DART 악재 필터 -->
+        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">DART 악재 필터 (2단계 ⑦)</div>
+        <div style="color:var(--text); margin-bottom:20px; padding:16px; background:rgba(255,255,255,0.03); border-radius:8px; border-left:3px solid #ff5252;">
+          <div style="color:var(--dim); line-height:2;">
+            DART Open API로 매수 전 종목별 재무 리스크를 자동 체크합니다.<br><br>
+            <strong style="color:var(--text);">연속 적자 체크</strong> — 최근 3기 사업보고서에서 당기순이익 조회<br>
+            &nbsp;&nbsp;2기 이상 적자 → <strong style="color:var(--red);">차단</strong><br>
+            &nbsp;&nbsp;1기 적자 50억 초과 → 경고<br><br>
+            <strong style="color:var(--text);">악재 공시 체크</strong> — 최근 90일 공시에서 키워드 매칭<br>
+            &nbsp;&nbsp;부도, 영업정지, 감자, 상장폐지, 횡령, 기소, 감사의견거절 등<br>
+            &nbsp;&nbsp;1건이라도 매칭 → <strong style="color:var(--red);">차단</strong><br><br>
+            <strong style="color:var(--text);">효과:</strong> 어제(3/26) 기준 스캔 9종목 중 6종목(67%) 차단 — 전부 실제 적자 기업
+          </div>
+        </div>
+
+        <!-- 4. 모의/실전 동기화 -->
+        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">모의/실전 수익률 동기화</div>
+        <div style="margin-bottom:20px;">
+          <table style="width:100%; font-size:12px; border-collapse:collapse;">
+            <thead><tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left; padding:6px 8px; color:var(--dim);">항목</th>
+              <th style="text-align:center; padding:6px 8px; color:var(--dim);">실전</th>
+              <th style="text-align:center; padding:6px 8px; color:var(--dim);">모의</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:6px 8px;">매수가</td><td style="text-align:center; padding:6px 8px;">체결확인 시 실제 체결가(avgPrice)</td><td style="text-align:center; padding:6px 8px;">매도 시 전일 종가(prevClose)로 보정</td></tr>
+              <tr><td style="padding:6px 8px;">매도가</td><td style="text-align:center; padding:6px 8px;">08:50 시장가 → 시가 체결</td><td style="text-align:center; padding:6px 8px;">09:01 시가(open) 조회 → 시가 정산</td></tr>
+              <tr><td style="padding:6px 8px;">수익률 괴리</td><td style="text-align:center; padding:6px 8px;" colspan="2"><strong style="color:var(--green);">0%p</strong> (시가 정산 + 매수가 보정으로 동기화)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 5. 타임라인 -->
+        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">일일 타임라인</div>
+        <pre style="color:var(--text); white-space:pre-wrap; font-family:inherit; margin-bottom:20px;">
+07:00  블랙리스트 갱신 (관리종목)
+08:50  [실전] 매도 — 시장가 주문
+09:00  장 시작 — 동시호가 체결
+09:01  [모의] 매도 — 시가 정산
+
+       ... 장중 ...
+
+15:05  [모의] 스캔(~3초) → 필터 → 1차 매수 (정규장 50%)
+15:06  [실전] 스캔(~3초) → 필터 → 1차 매수 (정규장 50%)
+15:20  장마감 동시호가 시작
+15:21  [모의] 2차 매수 (동시호가 50%, 1차 선정 종목)
+15:22  [실전] 2차 매수 (동시호가 50%, 1차 선정 종목)
+15:30  장마감
+15:32  체결확인 — 실제 체결가로 포지션 보정</pre>
+
+        <!-- 6. 백테스트 결과 -->
+        <div style="font-size:16px; font-weight:700; margin-bottom:12px; color:var(--accent);">1년 백테스트 (2025.03 ~ 2026.03, DART 필터 적용)</div>
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:16px;">
           <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
             <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">총 거래</div>
-            <div style="font-size:22px; font-weight:700; color:var(--text);">1,357건</div>
+            <div style="font-size:22px; font-weight:700; color:var(--text);">716건</div>
           </div>
           <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
             <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">승률</div>
-            <div style="font-size:22px; font-weight:700; color:var(--green);">76.6%</div>
+            <div style="font-size:22px; font-weight:700; color:var(--green);">76.8%</div>
           </div>
           <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
-            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">건당 수익</div>
-            <div style="font-size:22px; font-weight:700; color:var(--green);">+7.56%</div>
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">건당 평균 수익률</div>
+            <div style="font-size:22px; font-weight:700; color:var(--green);">+7.45%</div>
           </div>
           <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
-            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">최대 낙폭</div>
-            <div style="font-size:22px; font-weight:700; color:var(--red);">-10.6%</div>
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">일평균 종목수</div>
+            <div style="font-size:22px; font-weight:700; color:var(--text);">3.3</div>
           </div>
-        </div>
-
-        <!-- 시장 상태별 -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text);">시장 상태별 성과 — 상승장·횡보장·하락장 모두 수익</div>
-          <table style="width:100%; font-size:12px; border-collapse:collapse;">
-            <thead><tr style="border-bottom:1px solid var(--border);">
-              <th style="text-align:left; padding:6px 8px; color:var(--dim);">시장 상태</th>
-              <th style="text-align:right; padding:6px 8px; color:var(--dim);">거래수</th>
-              <th style="text-align:right; padding:6px 8px; color:var(--dim);">승률</th>
-              <th style="text-align:right; padding:6px 8px; color:var(--dim);">건당 EV</th>
-            </tr></thead>
-            <tbody>
-              <tr><td style="padding:6px 8px;">상승장</td><td style="text-align:right; padding:6px 8px;">724건</td><td style="text-align:right; padding:6px 8px; color:var(--green);">72.5%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+5.36%</td></tr>
-              <tr><td style="padding:6px 8px;">횡보장</td><td style="text-align:right; padding:6px 8px;">534건</td><td style="text-align:right; padding:6px 8px; color:var(--green);">78.8%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+4.65%</td></tr>
-              <tr><td style="padding:6px 8px;">하락장</td><td style="text-align:right; padding:6px 8px;">143건</td><td style="text-align:right; padding:6px 8px; color:var(--green);">74.1%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+6.96%</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 월별 성과 -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text);">월별 성과 — 12개월 연속 플러스</div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(80px, 1fr)); gap:6px;">
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.03</div><div style="color:var(--green); font-weight:600; font-size:12px;">+8.94%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.04</div><div style="color:var(--green); font-weight:600; font-size:12px;">+3.85%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.05</div><div style="color:var(--green); font-weight:600; font-size:12px;">+7.03%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.06</div><div style="color:var(--green); font-weight:600; font-size:12px;">+5.86%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.07</div><div style="color:var(--green); font-weight:600; font-size:12px;">+5.49%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.08</div><div style="color:var(--green); font-weight:600; font-size:12px;">+7.08%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.09</div><div style="color:var(--green); font-weight:600; font-size:12px;">+5.35%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.10</div><div style="color:var(--green); font-weight:600; font-size:12px;">+7.08%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.11</div><div style="color:var(--green); font-weight:600; font-size:12px;">+3.48%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">25.12</div><div style="color:var(--green); font-weight:600; font-size:12px;">+2.22%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">26.01</div><div style="color:var(--green); font-weight:600; font-size:12px;">+5.68%</div></div>
-            <div style="background:rgba(76,175,80,0.1); border-radius:6px; padding:8px; text-align:center;"><div style="color:var(--dim); font-size:10px;">26.02</div><div style="color:var(--green); font-weight:600; font-size:12px;">+5.15%</div></div>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">일 최소 / 최대</div>
+            <div style="font-size:22px; font-weight:700; color:var(--text);">1 ~ 10</div>
           </div>
-        </div>
-
-        <!-- 요일별 -->
-        <div style="margin-bottom:16px;">
-          <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text);">요일별 성과 — 금요일 매수가 가장 수익 큼</div>
-          <table style="width:100%; font-size:12px; border-collapse:collapse;">
-            <thead><tr style="border-bottom:1px solid var(--border);">
-              <th style="text-align:left; padding:6px 8px; color:var(--dim);">매수 요일</th>
-              <th style="text-align:right; padding:6px 8px; color:var(--dim);">승률</th>
-              <th style="text-align:right; padding:6px 8px; color:var(--dim);">평균 수익</th>
-              <th style="text-align:right; padding:6px 8px; color:var(--dim);">중앙값</th>
-            </tr></thead>
-            <tbody>
-              <tr><td style="padding:6px 8px;">월요일</td><td style="text-align:right; padding:6px 8px;">78.5%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+4.73%</td><td style="text-align:right; padding:6px 8px;">+5.59%</td></tr>
-              <tr><td style="padding:6px 8px;">화요일</td><td style="text-align:right; padding:6px 8px;">76.4%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+5.68%</td><td style="text-align:right; padding:6px 8px;">+5.70%</td></tr>
-              <tr><td style="padding:6px 8px;">수요일</td><td style="text-align:right; padding:6px 8px;">72.6%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+3.23%</td><td style="text-align:right; padding:6px 8px;">+4.55%</td></tr>
-              <tr><td style="padding:6px 8px;">목요일</td><td style="text-align:right; padding:6px 8px;">73.0%</td><td style="text-align:right; padding:6px 8px; color:var(--green);">+4.90%</td><td style="text-align:right; padding:6px 8px;">+5.82%</td></tr>
-              <tr style="background:rgba(76,175,80,0.08);"><td style="padding:6px 8px; font-weight:600;">금요일</td><td style="text-align:right; padding:6px 8px;">72.4%</td><td style="text-align:right; padding:6px 8px; color:var(--green); font-weight:600;">+6.82%</td><td style="text-align:right; padding:6px 8px; font-weight:600;">+6.31%</td></tr>
-            </tbody>
-          </table>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">일 최대 수익률</div>
+            <div style="font-size:22px; font-weight:700; color:var(--green);">+29.57%</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">일 최대 손실률</div>
+            <div style="font-size:22px; font-weight:700; color:var(--red);">-16.51%</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">건별 최대 수익률</div>
+            <div style="font-size:22px; font-weight:700; color:var(--green);">+29.74%</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">건별 최대 손실률</div>
+            <div style="font-size:22px; font-weight:700; color:var(--red);">-30.04%</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">거래일수</div>
+            <div style="font-size:22px; font-weight:700; color:var(--text);">215일</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:14px; text-align:center; grid-column: span 5;">
+            <div style="color:var(--dim); font-size:11px; margin-bottom:4px;">50만원 복리 재투자 시 (이론적)</div>
+            <div style="font-size:22px; font-weight:700; color:var(--green);">50만 → 7,846억</div>
+          </div>
         </div>
 
         <!-- 핵심 요약 -->
         <div style="padding:14px; background:rgba(255,255,255,0.03); border-radius:8px; border-left:3px solid var(--accent); color:var(--dim); line-height:2;">
           <strong style="color:var(--text);">핵심 원리:</strong> 양의 기대값 게임을 매일 자동 반복 → 손실이 나는 날도 있지만, 횟수가 쌓이면 수익이 수렴<br>
-          <strong style="color:var(--text);">비용:</strong> 수수료 1.0% + 매도세 0.18% = 편도 1.18% (이걸 넘는 갭업만 순수익)<br>
+          <strong style="color:var(--text);">비용:</strong> 수수료 0.147%×2 + 매도세 0.18% = 왕복 0.474%<br>
+          <strong style="color:var(--text);">안전장치:</strong> DART 악재 필터 (적자/공시) + 관리종목 블랙리스트 + 매도 5단계 리트라이<br>
           <strong style="color:var(--text);">이론:</strong> Overnight Return Anomaly + Short-term Momentum + Auction Theory
         </div>
 
