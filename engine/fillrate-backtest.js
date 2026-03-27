@@ -19,7 +19,7 @@ const fs = require('fs');
 const path = require('path');
 
 const OHLCV_DIR = path.join(__dirname, '..', 'data', 'ohlcv');
-const COMMISSION = 0.005;
+const COMMISSION = 0.00147; // 편도 0.147% (한국투자증권)
 const TAX = 0.0018;
 const ROUND_TRIP = COMMISSION * 2 + TAX;
 const SEED = 5_000_000;
